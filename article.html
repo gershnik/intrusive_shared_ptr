@@ -1,0 +1,438 @@
+<html>
+<body>
+
+	<h2>Contents</h2>
+	<ul>
+		<li><a href="#intro">Introduction</a></li>
+		<li><a href="#why_irc">Why would I use intrusive reference counting?</a></li>
+		<li><a href="#why_refcnt_ptr">Why another smart pointer?</a></li>
+		<li><a href="#source">Source code</a></li>
+		<li><a href="#usage">Usage examples</a></li>
+		<li><a href="#formal">Formal properties</a></li>
+		<li><a href="#ref_counted">A note on implementing reference counted objects</a></li>
+
+	</ul>
+	<h2><a name="intro">Introduction</a></h2>
+	<p>This article and the code that accompanies it present an intrusive
+	<a href="http://en.wikipedia.org/wiki/Reference_counting" target="_blank">reference counting</a> 
+	<a href="http://en.wikipedia.org/wiki/Smart_pointer" target="_blank">smart pointer</a>. 
+	If you don't know what it means click on the links in the previous sentence. The word intrusive
+	signifies that the reference counting is done by the object itself rather than external code. If
+	you ever used Microsoft COM then this is exactly the kind of reference counting used there. If you
+	are familiar with Boost or TR1 shared_ptr this is exactly what they are <b>not</b> doing. 
+	To avoid typing 'reference counting' or 'intrusive reference counting' every time I will use
+	RC and IRC abbreviations. Similarly ERC will stand for external reference counting as practiced
+	by shared_ptr and similar classes.</p>
+	<h2><a name="why_irc">Why would I use intrusive reference counting?</a></h2>
+	<p>First you might not have a choice. A framework or library you are using might require IRC.
+	Microsoft COM does for example and so do some other important libraries. You can in principle use
+	a non-intrusive RC smart pointer with IRC object if it supports custom acquire/cleanup actions but
+	doing so is more complicated and introduces unnecessary overhead.
+	</p><p>
+	Which brings us to another point. IRC can and usually does result in better performance than ERC. 
+	An ERC smart pointer has to store the count somewhere and it will be either in the pointer object itself
+	or some external location. In the first case you pay in pointer size while in the second you pay in 
+	additional allocation and cache misses when accessing the count (which is in a different location than
+	both the pointer and pointee). To put it in a different perspective all other things being equal 
+	under best possible circumstances an ERC can only be as efficient as IRC but never better.
+	</p>
+	<p>Yet another advantage of IRC is that you can produce an IRC smart pointer from any raw pointer
+	to the object including <b>this</b>. This means that you can easily produce smart 
+	pointers to itself 
+	from any of the object's member functions. This is in general impossible with ERC without modifying
+	the object. But then if you already modify it why not make it IRC and avoid all the trouble. 
+	</p>
+	<p>Of course nothing comes for free. The main disadvantage of IRC is of course the <i>intrusive</i>
+	part. In order to use it you must design the target object class to support reference counting.
+	However, this can be addressed for most 
+	object types by using templated reference 
+	counted adapters as shown at the end of this 
+	article. However, template adapters are not 
+	perfect and in some cases ERC remains the only available option.
+	</p>
+	<p>Another IRC disadvantage is that it is hard to support so-called <i>weak</i> pointers. Not that it is
+	impossible but doing it requires some framework for object registration which pretty much removes
+	all IRC advantages.</p>
+	<p>Having discovered shared_ptr some people tend to treat it as the best, indeed default, smart pointer.
+	This is, in my opinion very misguided. An ERC smart pointer like shared_ptr is just one possible choice
+	and should be used only when it fits the problem you are trying to solve. If you
+	need single owner semantics with ownership transfer use auto_ptr, if you need single owner with no transfer
+	use scoped_ptr. If you need RC, control 
+	target object source and don't need weak pointers consider and IRC 
+	smart pointer like refcnt_ptr presented here. Finally if you need RC but don't control the target or need 
+	weak pointers, shared_ptr is, indeed, a good choice.</p>
+	<h2><a name="why_refcnt_ptr">Why another smart pointer?</a></h2>
+	<p>Well, because I couldn't find one that I liked. There are quite a few well-known IRC smart pointers
+	implementations but they all have some problems I couldn't live with. First of all most smart pointers come
+	packaged within a library. boost::intrusive_ptr requires Boost, Loki's smart pointer requires Loki etc.
+	This is fine if you are already using these nice libraries but can be a problem if you don't. In a commercial
+	software development world bringing in a new 3rd party library can be a tricky proposition (for very
+	good reasons) and people often cannot do it. What I needed is an independent smart pointer class that
+	can be copy/pasted into any code base. (Not that you cannot grab the code of Boost or Loki smart pointers - it is
+	just more complicated than it ought to be)</p>
+	<p>
+	Even ignoring the problem above there are some fundamental flaws with pretty much every IRC smart pointer 
+	implementation. To begin with all of them include a constructor of the form
+	</p>
+<pre>smart_ptr(T * p);</pre>
+	<p>
+	This is very, very bad design. It asserts that there is a conversion from raw pointer to smart pointer. However, 
+	with IRC there is always the question whether such conversion results in an increment of reference count. There
+	is no single good answer to it. In some situations you want the count to go up and
+	in some you don't. Pretending that there is one default choice is misleading. 
+	To get around this problem some IRC smart pointers include another constructor of the form
+	</p>
+<pre>smart_ptr(T * p, bool add_ref);</pre>
+	<p>
+	Which is practically an example of how not to use <b>bool</b> parameters. Is it so hard to introduce an enum
+	with easy to comprehend name so the reader doesn't have to guess what smart_ptr(p, false) means?
+	</p>
+	<p>Some smart pointers from Microsoft and others go further and commit various other sins. They arent generic
+	enough and require the pointee to have functions with some exact signature prescribed by the smart pointer. For 
+	example if your 'decrement reference count' function isn't named Release() you cannot use MS smart pointers.
+	They also may overload operator &amp; (address of) to return the address of the stored pointer. This is done
+	with best intentions to support passing &amp;smart_ptr&lt;T&gt; to a function expecting T ** but this hack
+	makes it impossible to store such smart pointer in containers or do anything else that might require taking its
+	real address.</p>
+	<p>To summarize, most IRC smart pointers out there suck and so I decided to create my own
+	</p>
+	<h2><a name="source">Source code</a></h2>
+	<p>The source code for refcnt_ptr can be downloaded from 
+	<a href="https://github.com/gershnik/intrusive_shared_ptr/blob/1cc741dbed8e35f0b3a7ea74a939b8d9ab22de94/refcnt_ptr.h">here</a>. It is under 
+	MIT style license so you are free
+	to include it in commercial or open source projects as long as you comply with it.</p>
+	<p>If you have any questions or <u>constructive</u> criticism feel free to contact me. I will try to answer
+	all mail but please be patient, working on open source code doesn't pay my bills.</p>
+	
+	<h2><a name="usage">Usage examples</a></h2>
+	<p>In order to use refcnt_ptr with your class you need to define two function that tell it how to increment and
+	decrement the reference count for this class. For a refcnt_ptr&lt;T&gt; you need to define</p>
+<pre>
+void refcnt_add_ref(T &amp; unk);
+void refcnt_sub_ref(T &amp; unk);
+</pre>
+	<p>Note the reference rather than pointer parameter. It is so because you will never get a NULL parameter 
+	in this function so don't worry about it.
+	</p>
+	<p>These functions can be in any namespace as long as a lookup for T &amp; can find them.</p>
+	<p>Here is an example COM's IUnknown interface</p>
+<pre>
+inline
+void refcnt_add_ref(IUnknown &amp; unk)
+{
+    unk.AddRef();
+}
+inline
+void refcnt_sub_ref(IUnknown &amp; unk)
+{
+    unk.Release();
+} 
+</pre>
+	
+	<h3>Basic usage</h3>
+	<p>
+	Having declared/defined these two functions now you can use refcnt_ptr&lt;T&gt; as follows
+	</p>
+<pre>
+refcnt_ptr&lt;T&gt; pT1 = noref(new T);       //create from raw but don't increment ref count
+
+refcnt_ptr&lt;T&gt; pT2;
+pT2 = noref(new T);                     //assign from raw but don't increment ref count
+
+T * pRawT3 = ...;
+refcnt_ptr&lt;T&gt; pT3 = ref(pRawT3);        //create from raw and increment ref count
+
+T * pRawT4 = ...;
+refcnt_ptr&lt;T&gt; pT4;
+pT4 = ref(pRawT4);                      //assign from raw and increment ref count
+
+refcnt_ptr&lt;T&gt; pT5 = pT4;                //normal copy
+
+refcnt_ptr&lt;T&gt; pT6;
+pT6 = pT5;                              //normal assignment
+
+T * pRawT7 = pT6.c_ptr();               //get the raw pointer. note the name which is IMO way 
+                                        //better than meaningless get()
+
+T &amp; t8 = *pT6;                          //usual dereference
+
+pT6-&gt;foo();                             //and arrow operator 
+
+pT6.reset();                            //releases the reference and sets the stored pointer 
+                                        //to NULL. note that there is no argument to this function
+
+T * pRawT8 = pT5.release();             //sets the stored pointer to NULL and returns its 
+                                        //previous value. reference count is unchanged
+
+pT4.swap(pT3);                          //the usual swap operation
+</pre>
+	<h3>Comparisons</h3>
+	<p>refcnt_ptr&lt;T&gt; can be natuarally compared with both raw pointers and other refcnt_ptr&lt;T&gt;</p>
+<pre>
+refcnt_ptr&lt;T&gt; pT1 = ..., pT2 = ...; 
+T * pRawT = ...;
+
+if (pT1 == pT2) ....;
+if (pT1 == pRawT) ....;
+if (pRawT == pT1) ....;
+
+//and the same for !=, &lt;, &lt;=, &gt;, &gt;=
+
+</pre>
+    <h3>Conversions</h3>
+    <p>In general if you have two types T and Y such as Y * can be implicitly converted to T * then
+    refcnt_ptr&lt;T&gt; can accept Y * and refcnt_ptr&lt;Y&gt; in any of the constructors and assignment
+    operators. To use the examples from above
+    </p>
+<pre>
+refcnt_ptr&lt;T&gt; pT1 = noref(new Y);       //create from raw but don't increment ref count
+
+refcnt_ptr&lt;T&gt; pT2;
+pT2 = noref(new Y);                     //assign from raw but don't increment ref count
+
+Y * pRawY3 = ...;
+refcnt_ptr&lt;T&gt; pT3 = ref(pRawY3);        //create from raw and increment ref count
+
+Y * pRawY4 = ...;
+refcnt_ptr&lt;T&gt; pT4;
+pT4 = ref(pRawY4);                      //assign from raw and increment ref count
+
+refcnt_ptr&lt;Y&gt; pY4 = ...;
+refcnt_ptr&lt;T&gt; pT5 = pY4;                //normal copy
+
+refcnt_ptr&lt;T&gt; pT6;
+pT6 = pY4;                              //normal assignment
+
+refcnt_ptr&lt;T&gt; pT7 = ...; 
+refcnt_ptr&lt;Y&gt; pY7 = ...; 
+Y * pRawY7 = ...;
+
+if (pT7 == pY7) ....;
+if (pT7 == pRawY7) ....;
+if (pRawY7 == pT7) ....;
+
+//and the same for !=, &lt;, &lt;=, &gt;, &gt;=
+</pre>
+	<h3>Conditionals</h3>
+	<p>refcnt_ptr&lt;T&gt; can be used in coditional expressions. This is done without
+	introducing any unintended conversions to an integers</p>
+<pre>
+refcnt_ptr&lt;T&gt; pT = ....; 
+
+if (pT) ...;                           //fine
+while(!pT) ...;                        //fine
+
+pT + 7                                 //won't compile
+</pre>
+	<h3>Explicit conversions</h3>
+	<p>If you need to convert refcnt_ptr&lt;Y&gt; to refcnt_ptr&lt;T&gt; where Y * can only be converted
+	to T * using any of non-implicit C++ casts
+	(static, dynamic, const and reinterpret) you can of course go through raw pointers but this is tedious.
+	So instead you can use the following helpers to save you some time</p>
+<pre>
+refcnt_ptr&lt;T&gt; pT = ....; 
+refcnt_ptr&lt;const T&gt; pConstT = ....;
+refcnt_ptr&lt;Y&gt; pY = ....; 
+
+
+pT = refcnt_const_cast&lt;T&gt;(pConstT);
+pT = refcnt_static_cast&lt;T&gt;(pY);
+pT = refcnt_dynamic_cast&lt;T&gt;(pY);
+pT = refcnt_reinterpret_cast&lt;T&gt;(pY);
+</pre>
+	<p>This is basically all you can do with refcnt_ptr. Simple isn't it?</p>
+	<h2><a name="formal">Formal properties</a></h2>
+	<h3>Requirements for type T</h3>
+	<ol>
+		<li>The expressions T * should form a valid data pointer</li>
+		<li>If T * p then expressions refcnt_add_ref(*p) and refcnt_sub_ref(*p) must be valid function calls</li>
+		<li>If T * p points to a valid object then this object must remain alive if refcnt_add_ref(*p) was called more times than
+		refcnt_sub_ref(*p)</li>
+	</ol>
+	<h3>Exception safety</h3>
+	<ol>
+		<li>refcnt_sub_ref function supplied by user <b>must not throw</b>. 
+		If it does using refcnt_ptr results in undefined behavior</li>
+		<li>refcnt_add_ref function supplied by user may throw freely</li>
+		<li>if refcnt_add_ref does not throw then all functions of refcnt_ptr do not throw either (nothrow ES guarantee)</li>
+		<li>if refcnt_add_ref throws then constructors and assignment operators of refcnt_ptr provide
+		strong ES guarantee, while all other functions are still nothrow</li>
+	</ol>
+	<h3>Thread safety</h3>
+	<ol>
+		<li>Simultaneous operations on distinct objects by multiple threads do not require synchronization and
+		do not introduce synchronization of their own</li>
+		<li><b>With exception of copy and assignment from an object</b> simultaneous read (const) operations  on on the same 
+		object by multiple threads do not require synchronization and do not introduce synchronization of their own</li>
+		<li>Iff refcnt_add_ref and refcnt_sub_ref do not require external 
+		synchronization with respect to themselves 
+		and each other then simultaneous 
+		copy and assignment from the same object by multiple threads do not require synchronization either. Whether
+		they introduce synchronization of their own depends on implementation of refcnt_add_ref and refcnt_sub_ref</li>
+		<li>Otherwise simultaneous 
+		copy and assignment from the same object by multiple threads require external synchronization</li>
+		<li>Simultaneous write (non const) operations on the same object by multiple threads require external synchronizations.
+		Failure to synchronize them results in UB</li>
+	</ol>
+	<p>In plain English if refcnt_add_ref and refcnt_sub_ref are thread safe then refcnt_ptr is thread safe
+	for reads. Otherwise be careful and read the exact rules above</p>
+	<h2><a name="ref_counted">A note on implementing reference counted objects</a></h2>
+	<p>Making an object reference counted is a little tricky. There is one fundamental problem, two tricky
+	situations and some design choices that need to be taken care of. Since designing reference counted objects often goes together with
+	using reference counted smart pointers this is a good place to discuss these issues.</p>
+	<p>The basics are pretty well known. People usually create a class along the following lines</p>
+<pre>
+class foo
+{
+public:
+    void add_ref()
+       { ++m_count; }
+    void sub_ref()
+    {
+        if (--m_count == 0)
+            delete this;
+    }
+private:
+    atomic&lt;int&gt; m_count;
+};
+</pre>
+	<p>So far so good but why add_ref and sub_ref are not const? First reference count is really not a part
+	of the object state. Second having them non-const will prevent you from ever having smart_ptr&lt;const T&gt;
+	since any such smart pointer will have to call them on a const object. So here is the first revision
+	</p>
+<pre>
+class foo
+{
+public:
+    void add_ref() const
+       { ++m_count; }
+    void sub_ref() const
+    {
+        if (--m_count == 0)
+            delete this;
+    }
+private:
+    mutable atomic&lt;int&gt; m_count;
+};
+</pre>
+	
+	<p>Now the fundamnetal problem. What should the reference count be initialized to in object constructor: 
+	1 or 0? People who use flawed smart pointers that have a simple constructor smart_ptr(T * p) that always 
+	bumps the count tend to like 0. This way the object gets the desired one as soon as you stuff it into a smart_ptr</p>
+	<p>Unfortunately this turns out to be a bad design. The problem is that while in th body of the constructor you
+	have an object in a weird state: alive but with 0 reference count. This might sound theoretic but it hits you hard
+	if you ever create a temporary smart pointer out of <b>this</b> within the constructor. This can happen if you
+	call an external function that expects a smart pointer parameter 
+	(for example LogMe(smart_ptr&lt;T&gt;(this)).
+	In this case the count is bumped to 1 when the pointer is created but then goes to 0 when it is destroyed. And this
+	invokes the destructor. Bang! You've got a big piece of UB happening here.</p>
+	<p>In case you say 'I don't care since I will just avoid creating smart pointers out of <b>this</b> in the constructor',
+	consider that you will have to ensure that no helper method you call from the constructor does it. Essentially
+	each member function will now have to deal with the possibility that the object is in a bad state. And this is a
+	rich source of bugs</p>
+	<p>A much better approach is to create a simple invariant: all living objects have their reference count &gt; 0, period.
+	No more special states and no more avoiding smart pointers in constructor. With this is mind here is a revised foo</p>
+<pre>
+class foo
+{
+public:
+    foo() : m_count(1)
+    {}
+	
+    void add_ref() const
+       { ++m_count; }
+    void sub_ref() const
+    {
+        if (--m_count == 0)
+            delete this;
+    }
+private:
+    mutable atomic&lt;int&gt; m_count;
+};
+</pre>
+	<p>Note that having this convention requires you to use</p>
+	<pre>refcnt_ptr&lt;foo&gt; p = noref(new foo);</pre>
+	<p>Which is why noref was used in all examples above that included new objects.</p>
+	<p>But we are not off the hook yet. Now consider what happens in destructor. When we enter it the reference
+	count is already 0 but we might call some helper there too and pass it a smart pointer created from this. 
+	The count will be bumped again then go to 0 and you will have 'delete this' running the second time. </p>
+	<p>The solution is again to stick to principles. We agreed that a live object always has the count &gt; 0 and
+	so it must be the case for destructor too. Here is the correct version</p>
+<pre>
+class foo
+{
+public:
+    foo() : m_count(1)
+    {}
+	
+    void add_ref() const
+       { ++m_count; }
+    void sub_ref() const
+    {
+        if (--m_count == 0)
+        {
+        	++m_count; //restore invariant
+            delete this;
+        }
+    }
+private:
+    mutable atomic&lt;int&gt; m_count;
+};
+</pre>
+	<p>This is a bare minimum working reference counted class. Now, it is quite tedious to type it
+	every time so the next question is "can we reuse it?". The answer is yes but the mechanism of reuse
+	depends on your circumstances. You could make it a base class a derive from it but it is <i>intrusive</i>.
+	A better approach would be a class template that can be applied to many types without
+	touching them. Here it is</p>
+<pre>
+template&lt;typename T&gt;
+class ref_counted : public T
+{
+public:
+    ref_counted() : m_count(1)
+    {}
+	
+    void add_ref() const
+       { ++m_count; }
+    void sub_ref() const
+    {
+        if (--m_count == 0)
+        {
+        	++m_count; //restore invariant
+            delete this;
+        }
+    }
+private:
+    mutable atomic&lt;int&gt; m_count;
+};
+
+template&lt;typename T&gt;
+void refcnt_add_ref(const ref_counted&lt;T&gt; &amp; obj)
+{
+    obj.add_ref();
+}
+
+template&lt;typename T&gt;
+void refcnt_sub_ref(const ref_counted&lt;T&gt; &amp; obj)
+{
+    obj.sub_ref();
+}
+
+
+</pre>
+	<p>Now you can do things like</p>
+<pre>
+typedef ref_counted&lt;std::vector&lt;int&gt;&nbsp;&gt; ref_counted_vector;
+
+refcnt_ptr&lt;ref_counted_vector&gt; p = noref(new ref_counted_vector);
+</pre>
+	<p>This is almost like ERC. Of course there are still problems.
+	Current C++ doesn't allow 'inheriting' constructors so if the wrapped type
+	doesn't have a default construtor or you want to use a different one things
+	get trickier (you can partilly solve it by having delegated constructors with
+	up to N templated parameters). I'll leave all these extensions as an exercise for the
+	reader.
+	</p>
+
+</body>
+</html>
