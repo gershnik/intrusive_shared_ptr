@@ -12,6 +12,14 @@ Documentation and formal tests are work in progress.
 ## Contents
 
 * [Why bother?](#why-bother)
+  * [Named conversions from raw pointers](#conversions-from-raw-pointers)
+  * [No ADL](#no-adl)
+  * [Decent support for output parameters](#decent-support-for-output-parameters)
+  * [Support for `operator->*`](#support-for-operator-)
+  * [Atomic access](#atomic-access)
+  * [Trivial ABI](#trivial-abi)
+  * [Correct implementation of a "reference counted base" class](#correct-implementation-of-a-reference-counted-base-class)
+  * [Support for weak pointers](#support-for-weak-pointers)
 * [Usage](#usage)
   * [Using provided base classes](#using-provided-base-classes)
   * [Supporting weak pointers](#supporting-weak-pointers)
@@ -30,7 +38,7 @@ Unfortunately, as far as I can tell, all exisitng implementations, and that incl
 of this writing, suffer from numerous deficiencies that make them hard or annoying to use in real life code. 
 The most serious problems addressed here are as follows
 
-### Existence of conversion from a raw pointer.
+### Named conversions from raw pointers
 All other libraries offer a conversion in the form 
 `smart_ptr(T * p);`
 In my opinions this is an extremely bad design. When looking at a call like `smart_ptr(foo())` can you quickly tell whether this adds a reference count or "attaches" the smart pointer to a raw one? That's right, you cannot! The answer depends 
@@ -42,7 +50,7 @@ Can you quickly tell what `smart_ptr(p, true)` does? Is it "true, add reference"
 
 This library uses named functions to perform conversion. You see exactly what is being done at the call site.
 
-### ADL 
+### No ADL 
 
 Many libraries use [ADL](https://en.wikipedia.org/wiki/Argument-dependent_name_lookup) to find "add reference" and 
 "release reference" functions for the underlying type.
@@ -71,24 +79,11 @@ This might seem to be a minor thing but is really annoying in generic code. For 
 `operator->*` so that pointers to members could be accessed via the same syntax as for raw pointers. In non-generic code
 you can always work around it via `(*p).*whatever` but in generic code this is not an option.
 
-### Correct implementation of the "reference counted base" class
-
-This is not directly a problem with smart pointers but with a base class often provided together with them to implement an
-intrusively counted class. Very often they contain subtle bugs (see 
-['A note on implementing reference counted objects'](doc/reference_counting.md) for more details). It is also tricky to 
-create a base class that can work well for different requirements without compromising efficiency.
-
-### Support for weak pointers
-
-Continuing on the base class theme, when doing intrusive reference counting, supporting (or not) weak pointers is the responsibility of the counted class. Supporting weak pointers also usually involves tradeoffs in terms of performance or memory consumption. This library provides a separate base class that enables decent implementation of weak pointers. 
-
-
 ### Atomic access
 
 Somettimes you need to operate on smart pointers atomically. To the best of my knowledge noo library currently provides this functionality.
 
 This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending to it the normal `std::atomic` semantics.
-
 
 ### Trivial ABI
 
@@ -97,6 +92,18 @@ for performance can be found [here](https://quuxplusone.github.io/blog/2018/05/0
 Another take on the performance issue as a comment on standard library proposal can be found 
 [here](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1351r0.html#params).
 [This page](doc/trivial_abi.md) contains details on why this is a good idea and why concerns about order of destruction do not really matter here.
+
+### Correct implementation of a "reference counted base" class
+
+This is not directly a problem with smart pointers but with a base class often provided together with them to implement an
+intrusively counted class. Very often they contain subtle bugs (see 
+['A note on implementing reference counted objects'](doc/reference_counting.md) for more details). It is also tricky to 
+create a base class that can work well for different requirements without compromising efficiency.
+
+### Support for weak pointers
+
+Continuing on the base class theme, when doing intrusive reference counting, supporting (or not) weak pointers is the responsibility of the counted class. Supporting weak pointers also usually involves tradeoffs in terms of performance or memory consumption. 
+This library allows to enable a decent implementation of weak pointers via policy based design. 
 
 
 ## Usage 
@@ -247,6 +254,8 @@ static_assert(sizeof(tiny) == 2);
 
 ```
 
+More details can be found in [this document](doc/ref_counted.md)
+
 ### Supporting weak pointers
 
 If you want to support weak pointers you need to tell `ref_counted` about it. Since wak pointers include overhead
@@ -267,6 +276,7 @@ refcnt_ptr<foo> p2 = w1->lock();
 ```
 
 Note that you cannot customize the type of reference count if you support weak pointers - it will always be `intptr_t`.
+More details can be found in [this document](doc/ref_counted.md)
 
 ### Using with Apple CoreFoundation types
 
