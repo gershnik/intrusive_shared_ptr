@@ -106,9 +106,9 @@ namespace isptr
         using weak_ptr          = intrusive_shared_ptr<abstract_weak_reference, ref_counted_traits>;
         using const_weak_ptr    = intrusive_shared_ptr<const abstract_weak_reference, ref_counted_traits>;
     public:
-        virtual weak_ptr get_weak_ptr()
+        weak_ptr get_weak_ptr()
             { return weak_ptr::noref(const_cast<abstract_weak_reference *>(const_cast<const abstract_weak_ref_counted *>(this)->get_weak_value())); }
-        virtual const_weak_ptr get_weak_ptr() const
+        const_weak_ptr get_weak_ptr() const
             { return const_weak_ptr::noref(this->get_weak_value()); }
         
     private:
