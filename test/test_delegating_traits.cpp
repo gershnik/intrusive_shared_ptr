@@ -179,7 +179,7 @@ namespace
         using weak_inner_ptr = intrusive_shared_ptr<void, inner_traits::weak_ptr_traits>;
         using const_weak_inner_ptr = intrusive_shared_ptr<const void, inner_traits::weak_ptr_traits>;
         
-        class weak_value_type : public weak_reference<weak_outer, false>
+        class weak_value_type : public weak_reference<weak_outer>
         {
         friend weak_outer;
         friend ref_counted_weak_delegating_traits<weak_outer, int, inner_converter>;
