@@ -50,10 +50,8 @@ namespace
 
     class with_custom_weak_reference : public ref_counted<with_custom_weak_reference, ref_counted_flags::provide_weak_references>
     {
-        friend ref_counted;
+    friend ref_counted;
         
-    public:
-        using weak_reference = custom_weak_reference;
     public:
         with_custom_weak_reference()
         {
