@@ -7,6 +7,9 @@ template<class Derived,
          ref_counted_flags Flags = ref_counted_flags::none, 
          class CountType = default_count_type<Flags>>
 class ref_counted;
+
+template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
+using weak_ref_counted = ref_counted<Derived, Flags | ref_counted_flags::provide_weak_references>;
 ```
 
 `ref_counted` is meant to be used as base class for any class you want to make reference counted.
@@ -34,14 +37,8 @@ More flags may be added in the future.
 
 The template parameter CountType can be specified to indicate the type of reference count (if `ref_counted_flags::provide_weak_references` is not set). It must be a signed integral type.
 
-There is also a convenience typedef 
+The convenience typedef `weak_ref_counted` specifies `ref_counted` with `ref_counted_flags::provide_weak_references` flag and disallows setting the count type.
 
-```cpp
-template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
-using weak_ref_counted = ref_counted<Derived, Flags | ref_counted_flags::provide_weak_references>;
-```
-
-which adds sets `ref_counted_flags::provide_weak_references` and disallows setting the count type.
 
 ### Usage
 
@@ -210,8 +207,43 @@ Unless specified otherwise all methods of this class are `noexcept`.
  
 
 
+## Class isptr::ref_counted_adapter
 
+```cpp
+template<class T, ref_counted_flags Flags = ref_counted_flags::none, class CountType = default_count_type<Flags>>
+class ref_counted_adapter;
 
+template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
+using weak_ref_counted_adapter = ref_counted_adapter<Derived, Flags | ref_counted_flags::provide_weak_references>;
 
+```
 
+This class publicly derives from a non-reference counted class `T` and a `ref_counted`. The rest template parameters are forwarded to `ref_counted`.
+
+### Methods
+
+* Public constructor. Perfectly forwards to constructor of `T`. `noexcept` if `T`'s constructor is.
+* Protected destructor. 
+
+## Class isptr::ref_counted_wrapper
+
+```cpp
+template<class T, ref_counted_flags Flags = ref_counted_flags::none, class CountType = default_count_type<Flags>>
+class ref_counted_wrapper;
+
+template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
+using weak_ref_counted_wrapper = ref_counted_wrapper<Derived, Flags | ref_counted_flags::provide_weak_references>;
+
+```
+
+This class stores (wraps) a member of class `T` and derives form `ref_counted`. The rest template parameters are forwarded to `ref_counted`.
+
+### Members
+
+* Public `T wrapped`. The wrapped instance of `T`. 
+
+### Methods
+
+* Public constructor. Perfectly forwards to constructor of `wrapped`. `noexcept` if `T`'s constructor is.
+* Protected destructor. 
 

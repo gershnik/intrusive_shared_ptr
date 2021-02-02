@@ -57,6 +57,9 @@ namespace isptr
     template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
     using weak_ref_counted_adapter = ref_counted_adapter<Derived, Flags | ref_counted_flags::provide_weak_references>;
 
+    template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
+    using weak_ref_counted_wrapper = ref_counted_wrapper<Derived, Flags | ref_counted_flags::provide_weak_references>;
+
     template<class Owner>
     class weak_reference;
 
