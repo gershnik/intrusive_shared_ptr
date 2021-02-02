@@ -1,5 +1,29 @@
 # Header `<intrusive_shared_ptr/ref_counted.h>`
 
+<!-- TOC depthfrom:2 -->
+
+- [Class isptr::ref_counted](#class-isptrref_counted)
+    - [Customization](#customization)
+    - [Usage](#usage)
+    - [Rules for constructors and destructors](#rules-for-constructors-and-destructors)
+    - [Limitations](#limitations)
+    - [Types](#types)
+    - [Constants](#constants)
+    - [Methods](#methods)
+    - [Customizing weak reference type](#customizing-weak-reference-type)
+- [Class isptr::weak_reference](#class-isptrweak_reference)
+    - [Customization](#customization)
+    - [Usage](#usage)
+    - [Types](#types)
+    - [Methods](#methods)
+- [Class isptr::ref_counted_adapter](#class-isptrref_counted_adapter)
+    - [Methods](#methods)
+- [Class isptr::ref_counted_wrapper](#class-isptrref_counted_wrapper)
+    - [Members](#members)
+    - [Methods](#methods)
+
+<!-- /TOC -->
+
 ## Class isptr::ref_counted
 
 ```cpp
