@@ -53,6 +53,7 @@ These are described below.
 * Support for weak references. Default: no. Weak reference support adds some performance overhead even for object which never have weak reference taken so it is not enabled by default. In addition weak reference support requires the reference count type to be `intptr_t` which might be wasteful for many applications where `int` is sufficient.
 * Type of the reference count. Can only be customized if weak references are not supported. Default: `int`. If weak references are supported the count type is always `intptr_t`. You can reduce the size of derived classes by using a smaller type if it can fit the largest expected count. This type must be a signed integral type.
 * Many methods of `ref_counted` are accessed via CRTP calls to `Dervied`. This allows "overriding" them in your derived class to modify or augment their functionality.
+  * In particular, `destroy()` member function is called to actually destroy the instance when the reference count drops to 0. The base `ref_counted` implementation invokes `delete` on `Derived` pointer. Overrding this function in derived class allows you to handle objects allocated in a different way.
 
 The template parameter `Flags` is a set of flags of type `ref_counted_flags`. These can be bitwise OR-ed to combine.
 By default no flags are set. Currently only one flag is defined:
@@ -125,13 +126,14 @@ Unless specified otherwise all methods of this class are `noexcept`.
 * Copy and move assignment operators are similarly **deleted**
 * Protected default constructor. Reference count is set to 1 in it.
 * Protected destructor. 
+* Protected `void destroy() const noexcept`. Called when reference count drops to 0 to destroy the object. The default implementation calls `delete` on derived class pointer. Can be overriden in a derived class.
 * Public `void add_ref() const noexcept`. Increments reference count. Can be overriden in a derived class.
 * Public `void sub_ref() const noexcept`. Decrements reference count and destroys the object if it reaches 0. Can be overriden in a derived class.
 * If the class supports weak references then two additional public methods are available
   `weak_ptr get_weak_ptr()` and
   `const_weak_ptr get_weak_ptr() const`. 
   These methods are **not** `noexcept`. Weak reference "control block" is created lazily when a weak reference is requested for the first time. If memory allocation or customized weak reference class constructor throws these methods will throw. Subsequent calls will be `noexcept`. 
-* Protected `const weak_value_type * get_weak_value() const`. Only meaningfull if the class supports weak references. This is the actual method that retrieves raw pointer to weak reference. Not `nonexcept`. Can be overriden in a derived class.
+* Protected `const weak_value_type * get_weak_value() const`. Only meaningfull if the class supports weak references. This is the actual method that retrieves raw pointer to weak reference used to implement `get_weak_ptr`. Not `nonexcept`. Can be overriden in a derived class.
 * Protected `weak_value_type * make_weak_reference(intptr_t count) const`. Only meaningfull if the class supports weak references. This method is called to create weak reference (control block) when one is needed for the first time. The returned pointer has its own reference count already incremented (as appropriate for a method returning raw pointer). Can be overriden in a derived class.
 
 
@@ -163,6 +165,7 @@ Internally `weak_reference` is a "control block" for a `ref_counted`. It is refe
 
 You can derive your own class from `weak_reference` and use it in conjunction with your class derived from `ref_counted`. See [Customizing weak reference type](#customizing-weak-reference-type) for details.
 Many methods of `weak_reference` are accessed via CRTP calls to the derived class. This allows "overriding" them in your derived class to modify or augment their functionality.
+In particular, `destroy()` member function is called to actually destroy the instance when the reference count drops to 0. The base `weak_reference` implementation invokes `delete` on your class pointer. Overrding this function in derived class allows you to handle objects allocated in a different way.
 
 
 ### Usage
@@ -214,6 +217,7 @@ Unless specified otherwise all methods of this class are `noexcept`.
   The `initial_strong` parameter is the initial value for the `Owner`s reference count. Since `weak_reference` objects are created on-demand the referent's count can be any value that was reached prior to `weak_reference` creation.
   The `owner` is a raw pointer to the `Owner` object.
 * Protected destructor. 
+* Protected `void destroy() const noexcept`. Called when object's own reference count drops to 0 to destroy the object. The default implementation calls `delete` on derived class pointer. Can be overriden in a derived class.
 * Public `void add_ref() const noexcept`. Increments object's own reference count. Can be overriden in a derived class.
 * Public `void sub_ref() const noexcept`. Decrements object's own reference count and destroys the object if it reaches 0. Note that the `Owner` always holds a reference to its `weak_reference` (control block) so it will only be destroyed after the `Owner` object. Can be overriden in a derived class.
 * Public 
