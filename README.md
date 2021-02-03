@@ -403,6 +403,7 @@ Due to non-default destructors this functionality is not available on C++17
 ## Reference
 
 * [intrusive_shared_ptr.h](doc/intrusive_shared_ptr.md)
+* [refcnt_ptr.h](doc/refcnt_ptr.md)
 * [ref_counted.h](doc/ref_counted.md)
 
 
