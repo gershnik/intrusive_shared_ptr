@@ -132,6 +132,31 @@ TEST_CASE( "Ref counted with ctor exception", "[ref_counted]") {
     }
 }
 
+TEST_CASE( "Custom destroy", "[ref_counted]") {
+    
+    
+    struct custom_destroy : ref_counted<custom_destroy>
+    {
+    friend ref_counted;
+        
+        custom_destroy(bool * d): destroyed(d) {}
+        
+        bool * destroyed;
+    private:
+        void destroy() const noexcept
+        {
+            *destroyed = true;
+            free((void*)this);
+        }
+    };
+    
+    bool destroyed = false;
+    auto p1 = refcnt_attach(new (malloc(sizeof(custom_destroy))) custom_destroy{&destroyed});
+    p1.reset();
+    CHECK(destroyed);
+    
+}
+
 TEST_CASE( "Ref counted wrapper", "[ref_counted]") {
 
     SECTION("adapter") {

@@ -74,7 +74,7 @@ using traits_type = Traits;
 - `T * release() noexcept` Releases the stored pointer. The object is set to null and calling code assumes ownership of the
    pointer. No adjustment is made to the reference count.
 - `void reset() noexcept` Clears the stored pointer. The reference count is decremented.
-- `void swap(intrusive_shared_ptr<T, Traits> & other) noexcept` and
+- `void swap(intrusive_shared_ptr<T, Traits> & other) noexcept` and <br/>
   `friend void swap(intrusive_shared_ptr<T, Traits> & lhs, intrusive_shared_ptr<T, Traits> & rhs) noexcept` (ADL only)
    Perform swap of pointers of the same type
 

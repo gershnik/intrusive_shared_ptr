@@ -125,6 +125,9 @@ namespace isptr
         ref_counted() noexcept = default;
         ~ref_counted() noexcept;
         
+        void destroy() const noexcept
+            { delete static_cast<const Derived *>(this); }
+        
         const weak_value_type * get_weak_value() const;
         
         weak_value_type * make_weak_reference(intptr_t count) const
@@ -140,8 +143,8 @@ namespace isptr
         void call_sub_ref() const noexcept
             { static_cast<const Derived *>(this)->sub_ref(); }
         
-        void destroy() const noexcept
-            { delete static_cast<const Derived *>(this); }
+        void call_destroy() const noexcept
+            { static_cast<const Derived *>(this)->destroy(); }
 
         auto call_make_weak_reference(intptr_t count) const
         {
@@ -198,6 +201,9 @@ namespace isptr
 
         ~weak_reference() noexcept = default;
         
+        void destroy() const
+            { delete static_cast<const derived_type<> *>(this); }
+        
         void add_owner_ref() noexcept;
         void sub_owner_ref() noexcept;
         
@@ -218,8 +224,8 @@ namespace isptr
             { static_cast<derived_type<> *>(this)->add_owner_ref(); }
         void call_sub_owner_ref() noexcept
             { static_cast<derived_type<> *>(this)->sub_owner_ref(); }
-        void destroy() const
-            { delete static_cast<const derived_type<> *>(this); }
+        void call_destroy() const
+            { static_cast<const derived_type<> *>(this)->destroy(); }
         strong_value_type * call_lock_owner() const noexcept
             { return static_cast<const derived_type<> *>(this)->lock_owner(); }
         void call_on_owner_destruction() const noexcept
@@ -280,7 +286,7 @@ namespace isptr
         if (oldcount == 1)
         {
             std::atomic_thread_fence(std::memory_order_acquire);
-            this->destroy();
+            this->call_destroy();
         }
     }
 
@@ -302,7 +308,7 @@ namespace isptr
             std::atomic_thread_fence(std::memory_order_acquire);
             auto owner = this->m_owner;
             this->m_owner = nullptr;
-            owner->destroy(); //this can cascade to deleting ourselves so must be the last thing
+            owner->call_destroy(); //this can cascade to deleting ourselves so must be the last thing
         }
     }
 
@@ -362,7 +368,7 @@ namespace isptr
             if (oldcount == 1)
             {
                 std::atomic_thread_fence(std::memory_order_acquire);
-                this->destroy();
+                this->call_destroy();
             }
         }
         else
@@ -377,7 +383,7 @@ namespace isptr
                         if (value == 1)
                         {
                             std::atomic_thread_fence(std::memory_order_acquire);
-                            this->destroy();
+                            this->call_destroy();
                         }
                         return;
                     }

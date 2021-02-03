@@ -10,6 +10,7 @@ namespace
 {
     bool counted_add_ref_called = false;
     bool counted_sub_ref_called = false;
+    bool counted_destroy_called = false;
     bool make_weak_reference_called = false;
     bool get_weak_value_called = false;
 
@@ -34,6 +35,12 @@ namespace
         virtual ~abstract_ref_counted() noexcept
         {}
         
+        virtual void destroy() const noexcept
+        {
+            counted_destroy_called = true;
+            ref_counted::destroy();
+        }
+        
         virtual abstract_weak_reference * make_weak_reference(intptr_t count) const;
         
         virtual const weak_reference<abstract_ref_counted> * get_weak_value() const
@@ -45,6 +52,7 @@ namespace
 
     bool weak_add_ref_called = false;
     bool weak_sub_ref_called = false;
+    bool weak_destroy_called = false;
     bool add_owner_ref_called = false;
     bool sub_owner_ref_called = false;
     bool lock_owner_called = false;
@@ -71,6 +79,12 @@ namespace
     protected:
         virtual ~abstract_weak_reference() noexcept
         {}
+        
+        virtual void destroy() const noexcept
+        {
+            weak_destroy_called = true;
+            weak_reference::destroy();
+        }
         
     private:
         abstract_weak_reference(intptr_t count, abstract_ref_counted * owner):
@@ -131,18 +145,21 @@ TEST_CASE( "Abstract ref counted works", "[abstract_ref_counted]") {
         p.reset();
         p2.reset();
         p3.reset();
+        w.reset();
+        w1.reset();
         
         CHECK(counted_add_ref_called);
         CHECK(counted_sub_ref_called);
+        CHECK(counted_destroy_called);
         CHECK(make_weak_reference_called);
         CHECK(get_weak_value_called);
         CHECK(weak_add_ref_called);
         CHECK(weak_sub_ref_called);
+        CHECK(weak_destroy_called);
         CHECK(add_owner_ref_called);
         CHECK(sub_owner_ref_called);
         CHECK(lock_owner_called);
         CHECK(on_owner_destruction_called);
-
     }
 }
 

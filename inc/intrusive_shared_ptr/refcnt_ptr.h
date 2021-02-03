@@ -10,12 +10,12 @@ namespace isptr
     using refcnt_ptr = intrusive_shared_ptr<T, typename T::refcnt_ptr_traits>;
 
     template<class T>
-    refcnt_ptr<T> refcnt_retain(T * ptr) {
+    constexpr refcnt_ptr<T> refcnt_retain(T * ptr) noexcept {
         return refcnt_ptr<T>::ref(ptr);
     }
 
     template<class T>
-    refcnt_ptr<T> refcnt_attach(T * ptr) {
+    constexpr refcnt_ptr<T> refcnt_attach(T * ptr) noexcept {
         return refcnt_ptr<T>::noref(ptr);
     }
 
