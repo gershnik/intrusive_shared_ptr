@@ -37,8 +37,8 @@ using weak_ref_counted = ref_counted<Derived, Flags | ref_counted_flags::provide
 ```
 
 `ref_counted` is meant to be used as base class for any class you want to make reference counted.
-It is supposed to be used in conjuction with `refcnt_ptr` specialization of `intrusive_shared_ptr` but,
-of course, can be used via manual reference counting calls or other smart pointers if desired.
+It is supposed to be used in conjuction with [`refcnt_ptr`](refcnt_ptr.md) specialization of `intrusive_shared_ptr` but,
+of course, can also be used via manual reference counting calls or other smart pointers if desired.
 
 It uses CRTP to access the derived class, avoiding the need for and overhead of virtual functions.
 Thus, the first template parameter: `Derived` must be the name of the derived class. Other template
@@ -129,9 +129,9 @@ Unless specified otherwise all methods of this class are `noexcept`.
 * Protected `void destroy() const noexcept`. Called when reference count drops to 0 to destroy the object. The default implementation calls `delete` on derived class pointer. Can be overriden in a derived class.
 * Public `void add_ref() const noexcept`. Increments reference count. Can be overriden in a derived class.
 * Public `void sub_ref() const noexcept`. Decrements reference count and destroys the object if it reaches 0. Can be overriden in a derived class.
-* If the class supports weak references then two additional public methods are available
-  `weak_ptr get_weak_ptr()` and
-  `const_weak_ptr get_weak_ptr() const`. 
+* If the class supports weak references then two additional public methods are available <br/>
+  `weak_ptr get_weak_ptr()` and <br/>
+  `const_weak_ptr get_weak_ptr() const`. <br/>
   These methods are **not** `noexcept`. Weak reference "control block" is created lazily when a weak reference is requested for the first time. If memory allocation or customized weak reference class constructor throws these methods will throw. Subsequent calls will be `noexcept`. 
 * Protected `const weak_value_type * get_weak_value() const`. Only meaningfull if the class supports weak references. This is the actual method that retrieves raw pointer to weak reference used to implement `get_weak_ptr`. Not `nonexcept`. Can be overriden in a derived class.
 * Protected `weak_value_type * make_weak_reference(intptr_t count) const`. Only meaningfull if the class supports weak references. This method is called to create weak reference (control block) when one is needed for the first time. The returned pointer has its own reference count already incremented (as appropriate for a method returning raw pointer). Can be overriden in a derived class.
@@ -220,13 +220,13 @@ Unless specified otherwise all methods of this class are `noexcept`.
 * Protected `void destroy() const noexcept`. Called when object's own reference count drops to 0 to destroy the object. The default implementation calls `delete` on derived class pointer. Can be overriden in a derived class.
 * Public `void add_ref() const noexcept`. Increments object's own reference count. Can be overriden in a derived class.
 * Public `void sub_ref() const noexcept`. Decrements object's own reference count and destroys the object if it reaches 0. Note that the `Owner` always holds a reference to its `weak_reference` (control block) so it will only be destroyed after the `Owner` object. Can be overriden in a derived class.
-* Public 
-  `const_strong_ptr lock() const noexcept` and
-  `strong_ptr lock() noexcept`
+* Public <br/>
+  `const_strong_ptr lock() const noexcept` and <br/>
+  `strong_ptr lock() noexcept` <br/>
   Obtain a strong reference to `Owner`. The return valuue is a `null` smart pointer if the owner no longer exists.
-* Protected
-  `void add_owner_ref() noexcept` and
-  `void sub_owner_ref() noexcept`
+* Protected <br/>
+  `void add_owner_ref() noexcept` and <br/>
+  `void sub_owner_ref() noexcept` <br/>
   These manage reference count of the `Owner`. Can be overriden in a derived class.
 * Protected `strong_value_type * lock_owner() const noexcept`
   This method does the actual locking and returns a pointer to owner (with reference count incremented) or `null`. Can be overriden in a derived class.
