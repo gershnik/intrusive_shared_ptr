@@ -8,6 +8,8 @@ endif()
 
 project(test)
 
+add_subdirectory(..  lib)
+
 set (TEST_SUFFIXES
     17
     20
@@ -30,15 +32,15 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
         VISIBILITY_INLINES_HIDDEN ON
     )
 
+    target_link_libraries(test-${TEST_SUFFIX} PRIVATE
+        intrusive-shared-ptr
+    )
+
     target_compile_options(test-${TEST_SUFFIX} PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/W4;/WX>
         $<$<CXX_COMPILER_ID:Clang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
         $<$<CXX_COMPILER_ID:AppleClang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
         $<$<CXX_COMPILER_ID:GNU>:-Wall;-Wextra;-pedantic>
-    )
-
-    target_include_directories(test-${TEST_SUFFIX} PRIVATE
-        ../inc
     )
 
     target_link_libraries(test-${TEST_SUFFIX} PRIVATE
@@ -59,11 +61,6 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
 
         mocks.h
         catch.hpp
-        ../inc/intrusive_shared_ptr/intrusive_shared_ptr.h
-        ../inc/intrusive_shared_ptr/apple_cf_ptr.h
-        ../inc/intrusive_shared_ptr/com_ptr.h
-        ../inc/intrusive_shared_ptr/refcnt_ptr.h
-        ../inc/intrusive_shared_ptr/ref_counted.h
     )
 
     list(APPEND TEST_COMMAND COMMAND)
