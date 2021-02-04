@@ -1,3 +1,11 @@
+/*
+ Copyright 2004 Eugene Gershnik
+
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file or at
+ https://github.com/gershnik/intrusive_shared_ptr/blob/master/LICENSE.txt
+*/
+
 #ifndef HEADER_APPLE_CF_PTR_H_INCLUDED
 #define HEADER_APPLE_CF_PTR_H_INCLUDED
 
