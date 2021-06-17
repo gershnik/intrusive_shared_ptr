@@ -493,7 +493,7 @@ namespace std
 
         void store(value_type desired, memory_order order = memory_order_seq_cst) noexcept
         {
-            exchange(desired, order);
+            exchange(std::move(desired), order);
         }
         
         value_type exchange(value_type desired, memory_order order = memory_order_seq_cst) noexcept
@@ -557,7 +557,7 @@ namespace std
             return exchange_result;
         }
     private:
-        std::atomic<T *> m_p;
+        std::atomic<T *> m_p = nullptr;
     };
 }
 
