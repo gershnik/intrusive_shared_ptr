@@ -19,9 +19,11 @@ namespace isptr
 {
     struct com_traits
     {
-        static void add_ref(IUnknown * ptr) noexcept
+        template<class T>
+        static std::enable_if_t<std::is_base_of_v<IUnknown, T>, void> add_ref(T * ptr) noexcept
             { ptr->AddRef(); }
-        static void sub_ref(IUnknown * ptr) noexcept
+        template<class T>
+        static std::enable_if_t<std::is_base_of_v<IUnknown, T>, void> sub_ref(T * ptr) noexcept
             { ptr->Release(); }
     };
 
