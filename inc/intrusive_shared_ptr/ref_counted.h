@@ -13,6 +13,7 @@
 
 #include <atomic>
 #include <cassert>
+#include <limits>
 
 namespace isptr
 {
