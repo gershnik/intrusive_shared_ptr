@@ -1,0 +1,51 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Zip Headers
+        shell: bash
+        working-directory: ${{github.workspace}}
+        run: tar -czf intrusive_shared_ptr.tar.gz --transform 's/inc/intrusive_shared_ptr\/inc/' inc
+
+      - id: get-release-name
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tagName = context.ref.substring(context.ref.lastIndexOf('/') + 2)
+            core.setOutput('name', tagName)
+      
+      - name: Release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: true
+          prerelease: false
+          release_name: ${{ steps.get-release-name.outputs.name }}
+          tag_name: ${{ github.ref }}
+          body: ...edit me...
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload headers
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{github.workspace}}/intrusive_shared_ptr.tar.gz
+          asset_name: intrusive_shared_ptr-${{ steps.get-release-name.outputs.name }}.tar.gz
+          asset_content_type: application/gzip
+      
