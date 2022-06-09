@@ -6,7 +6,7 @@
 # https://github.com/gershnik/intrusive_shared_ptr/blob/master/LICENSE.txt
 #
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 
 set(SRCDIR ${CMAKE_CURRENT_LIST_DIR})
@@ -15,12 +15,12 @@ set(LIBNAME intrusive-shared-ptr)
 add_library(${LIBNAME} INTERFACE)
 
 target_include_directories(${LIBNAME}
-    
-    INTERFACE
+INTERFACE
     ${SRCDIR}/inc
 )
 
-target_sources(${LIBNAME} INTERFACE 
+target_sources(${LIBNAME} 
+PRIVATE 
     ${SRCDIR}/inc/intrusive_shared_ptr/intrusive_shared_ptr.h
     ${SRCDIR}/inc/intrusive_shared_ptr/apple_cf_ptr.h
     ${SRCDIR}/inc/intrusive_shared_ptr/com_ptr.h
