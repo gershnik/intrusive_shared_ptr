@@ -40,3 +40,5 @@ namespace isptr
     }
 }
 
+#endif
+
