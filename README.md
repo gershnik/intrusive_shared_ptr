@@ -25,6 +25,7 @@ Documentation and formal tests are work in progress.
   * [Supporting weak pointers](#supporting-weak-pointers)
   * [Using with Apple CoreFoundation types](#using-with-apple-corefoundation-types)
   * [Using with Microsoft COM interfaces](#using-with-microsoft-com-interfaces)
+  * [Using with Python objects](#using-with-python-objects)
   * [Using with non-reference counted types](#using-with-non-reference-counted-types)
 * [Atomic operations](#atomic-operations)
 * [Constexpr functionality](#constexpr-functionality)
@@ -303,6 +304,16 @@ cf_ptr<CFArrayRef> array = cf_retain(raw);
 com_shared_ptr<IStream> pStream;
 CreateStreamOnHGlobal(nullptr, true, pStream.get_output_param());
 pStream->Write(....);
+
+```
+
+### Using with Python objects
+
+```cpp
+#include <intrusive_shared_ptr/python_ptr.h>
+
+auto str = py_attach(PyUnicode_FromString("Hello"));
+std::cout << PyUnicode_GetLength(str.get());
 
 ```
 
