@@ -8,6 +8,19 @@ endif()
 
 project(test)
 
+find_package (Python3 COMPONENTS Interpreter Development)
+
+if(${Python3_Development_FOUND})
+    include_directories(
+    SYSTEM
+        ${Python3_INCLUDE_DIRS}
+    )
+
+    link_libraries(
+        ${Python3_LIBRARIES}
+    )
+endif()
+
 add_subdirectory(..  lib)
 
 set (TEST_SUFFIXES
@@ -47,11 +60,16 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
         "$<$<PLATFORM_ID:Darwin>:-framework CoreFoundation>"
     )
 
+    target_compile_definitions(test-${TEST_SUFFIX} PRIVATE
+        $<$<BOOL:${Python3_Development_FOUND}>:ISPTR_USE_PYTHON=1>
+    )
+
     target_sources(test-${TEST_SUFFIX} PRIVATE
 
         test_apple_cf_ptr.cpp
         test_atomic.cpp
         test_com_ptr.cpp
+        test_python_ptr.cpp
         test_general.cpp
         test_main.cpp
         test_ref_counted.cpp
