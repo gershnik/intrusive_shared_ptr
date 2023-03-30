@@ -434,7 +434,7 @@ namespace isptr
             else
             {
                 assert(this->m_count > 0);
-                assert(this->m_count > < std::numeric_limits<decltype(this->m_count)>::max());
+                assert(this->m_count < std::numeric_limits<decltype(this->m_count)>::max());
                 ++this->m_count;
             }
         }
@@ -464,7 +464,7 @@ namespace isptr
                 assert(this->m_count != 0);
                 if (!ref_counted::is_encoded_pointer(this->m_count))
                 {
-                    assert(this->m_count < std::numeric_limits<decltype(value)>::max());
+                    assert(this->m_count < std::numeric_limits<decltype(this->m_count)>::max());
                     ++this->m_count;
                 }
                 else 
@@ -559,7 +559,7 @@ namespace isptr
                     if (this->m_count.compare_exchange_strong(value, desired, std::memory_order_release, std::memory_order_relaxed))
                         return ret;
 
-                    delete ret;
+                    ret->call_destroy();
                 }
                 else
                 {
@@ -619,7 +619,7 @@ namespace isptr
                 }
                 else
                 {
-                    assert(valid_count(value));
+                    assert(valid_count(this->m_count));
                 }
             }
         }
