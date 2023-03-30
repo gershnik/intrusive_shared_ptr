@@ -32,6 +32,7 @@ namespace isptr
     {
         none = 0,
         provide_weak_references = 1,
+        single_threaded = 2
     };
 
     constexpr ref_counted_flags operator|(ref_counted_flags lhs, ref_counted_flags rhs) noexcept
@@ -60,14 +61,35 @@ namespace isptr
     template<class T, ref_counted_flags Flags = ref_counted_flags::none, class CountType = default_count_type<Flags>>
     class ref_counted_wrapper;
 
-    template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
-    using weak_ref_counted = ref_counted<Derived, Flags | ref_counted_flags::provide_weak_references>;
+    template<class Derived>
+    using weak_ref_counted = ref_counted<Derived, ref_counted_flags::provide_weak_references>;
 
-    template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
-    using weak_ref_counted_adapter = ref_counted_adapter<Derived, Flags | ref_counted_flags::provide_weak_references>;
+    template<class Derived>
+    using weak_ref_counted_adapter = ref_counted_adapter<Derived, ref_counted_flags::provide_weak_references>;
 
-    template<class Derived, ref_counted_flags Flags = ref_counted_flags::none>
-    using weak_ref_counted_wrapper = ref_counted_wrapper<Derived, Flags | ref_counted_flags::provide_weak_references>;
+    template<class Derived>
+    using weak_ref_counted_wrapper = ref_counted_wrapper<Derived, ref_counted_flags::provide_weak_references>;
+
+    template<class Derived, class CountType = default_count_type<ref_counted_flags::single_threaded>>
+    using ref_counted_st = ref_counted<Derived, ref_counted_flags::single_threaded, CountType>;
+
+    template<class Derived, class CountType = default_count_type<ref_counted_flags::single_threaded>>
+    using ref_counted_adapter_st = ref_counted_adapter<Derived, ref_counted_flags::single_threaded, CountType>;
+
+    template<class Derived, class CountType = default_count_type<ref_counted_flags::single_threaded>>
+    using ref_counted_wrapper_st = ref_counted_wrapper<Derived, ref_counted_flags::single_threaded, CountType>;
+
+    template<class Derived>
+    using weak_ref_counted_st = ref_counted<Derived, ref_counted_flags::provide_weak_references | 
+                                                     ref_counted_flags::single_threaded>;
+
+    template<class Derived>
+    using weak_ref_counted_adapter_st = ref_counted_adapter<Derived, ref_counted_flags::provide_weak_references | 
+                                                                     ref_counted_flags::single_threaded>;
+
+    template<class Derived>
+    using weak_ref_counted_wrapper_st = ref_counted_wrapper<Derived, ref_counted_flags::provide_weak_references |
+                                                                     ref_counted_flags::single_threaded>;
 
     template<class Owner>
     class weak_reference;
@@ -98,6 +120,7 @@ namespace isptr
         using ref_counted_base = ref_counted;
         
         static constexpr bool provides_weak_references = contains(Flags, ref_counted_flags::provide_weak_references);
+        static constexpr bool single_threaded = contains(Flags, ref_counted_flags::single_threaded);
         
     public:
         using weak_value_type   = std::conditional_t<ref_counted::provides_weak_references, weak_reference<Derived>, void>;
@@ -108,10 +131,10 @@ namespace isptr
         static_assert(!ref_counted::provides_weak_references || (ref_counted::provides_weak_references && std::is_same_v<CountType, intptr_t>),
                       "CountType must be intptr_t (the default) when providing weak references");
         static_assert(std::is_integral_v<CountType>, "CountType must be an integral type");
-        static_assert(std::atomic<CountType>::is_always_lock_free,
+        static_assert(ref_counted::single_threaded || std::atomic<CountType>::is_always_lock_free,
                       "CountType must be such that std::atomic<CountType> is alwayd lock free");
         
-        using count_type = CountType;
+        using count_type = std::conditional_t<ref_counted::single_threaded, CountType, std::atomic<CountType>>;
 
     public:
         ref_counted(const ref_counted &) noexcept = delete;
@@ -176,7 +199,7 @@ namespace isptr
         static bool is_encoded_pointer(intptr_t value) noexcept
             { return value < 0; }
     private:
-        mutable std::atomic<count_type> m_count = 1;
+        mutable count_type m_count = 1;
     };
 
     template<class Owner>
@@ -189,8 +212,18 @@ namespace isptr
         using strong_value_type = Owner;
         using strong_ptr = intrusive_shared_ptr<strong_value_type, ref_counted_traits>;
         using const_strong_ptr = intrusive_shared_ptr<const strong_value_type, ref_counted_traits>;
+
+        static const bool single_threaded = Owner::single_threaded;
+
+    private:
+        using count_type = std::conditional_t<weak_reference::single_threaded, intptr_t, std::atomic<intptr_t>>;
         
     public:
+        weak_reference(const weak_reference &) noexcept = delete;
+        weak_reference & operator=(const weak_reference &) noexcept = delete;
+        weak_reference(weak_reference &&) noexcept = delete;
+        weak_reference & operator=(weak_reference &&) noexcept = delete;
+
         void add_ref() const noexcept;
         void sub_ref() const noexcept;
         
@@ -241,8 +274,8 @@ namespace isptr
             { static_cast<const derived_type<> *>(this)->on_owner_destruction(); }
         
     private:
-        mutable std::atomic<intptr_t> m_count = 2;
-        mutable std::atomic<intptr_t> m_strong = 0;
+        mutable count_type m_count = 2;
+        mutable count_type m_strong = 0;
         Owner * m_owner = nullptr;
     };
 
@@ -282,42 +315,82 @@ namespace isptr
     template<class Owner>
     inline void weak_reference<Owner>::add_ref() const noexcept
     {
-        [[maybe_unused]] auto oldcount = this->m_count.fetch_add(1, std::memory_order_relaxed);
-        assert(oldcount > 0);
-        assert(oldcount < std::numeric_limits<decltype(oldcount)>::max());
+        if constexpr (!weak_reference::single_threaded) 
+        {
+            [[maybe_unused]] auto oldcount = this->m_count.fetch_add(1, std::memory_order_relaxed);
+            assert(oldcount > 0);
+            assert(oldcount < std::numeric_limits<decltype(oldcount)>::max());
+        } 
+        else 
+        {
+            assert(this->m_count > 0);
+            assert(this->m_count < std::numeric_limits<decltype(this->m_count)>::max());
+            ++this->m_count;
+        }
     }
 
     template<class Owner>
     inline void weak_reference<Owner>::sub_ref() const noexcept
     {
-        auto oldcount = this->m_count.fetch_sub(1, std::memory_order_release);
-        assert(oldcount > 0);
-        if (oldcount == 1)
+        if constexpr (!weak_reference::single_threaded) 
         {
-            std::atomic_thread_fence(std::memory_order_acquire);
-            this->call_destroy();
+            auto oldcount = this->m_count.fetch_sub(1, std::memory_order_release);
+            assert(oldcount > 0);
+            if (oldcount == 1)
+            {
+                std::atomic_thread_fence(std::memory_order_acquire);
+                this->call_destroy();
+            }
+        }
+        else 
+        {
+            assert(this->m_count > 0);
+            if (--this->m_count == 0)
+                this->call_destroy();
         }
     }
 
     template<class Owner>
     inline void weak_reference<Owner>::add_owner_ref() noexcept
     {
-        [[maybe_unused]] auto oldcount = this->m_strong.fetch_add(1, std::memory_order_relaxed);
-        assert(oldcount > 0);
-        assert(oldcount < std::numeric_limits<decltype(oldcount)>::max());
+        if constexpr (!weak_reference::single_threaded) 
+        {
+            [[maybe_unused]] auto oldcount = this->m_strong.fetch_add(1, std::memory_order_relaxed);
+            assert(oldcount > 0);
+            assert(oldcount < std::numeric_limits<decltype(oldcount)>::max());
+        }
+        else 
+        {
+            assert(this->m_strong > 0);
+            assert(this->m_strong < std::numeric_limits<decltype(this->m_count)>::max());
+            ++this->m_strong;
+        }
     }
 
     template<class Owner>
     inline void weak_reference<Owner>::sub_owner_ref() noexcept
     {
-        auto oldcount = this->m_strong.fetch_sub(1, std::memory_order_release);
-        assert(oldcount > 0);
-        if (oldcount == 1)
+        if constexpr (!weak_reference::single_threaded) 
         {
-            std::atomic_thread_fence(std::memory_order_acquire);
-            auto owner = this->m_owner;
-            this->m_owner = nullptr;
-            owner->call_destroy(); //this can cascade to deleting ourselves so must be the last thing
+            auto oldcount = this->m_strong.fetch_sub(1, std::memory_order_release);
+            assert(oldcount > 0);
+            if (oldcount == 1)
+            {
+                std::atomic_thread_fence(std::memory_order_acquire);
+                auto owner = this->m_owner;
+                this->m_owner = nullptr;
+                owner->call_destroy(); //this can cascade to deleting ourselves so must be the last thing
+            }
+        } 
+        else 
+        {
+            assert(this->m_strong > 0);
+            if (--this->m_strong == 0) 
+            {
+                auto owner = this->m_owner;
+                this->m_owner = nullptr;
+                owner->call_destroy(); //this can cascade to deleting ourselves so must be the last thing
+            }
         }
     }
 
@@ -325,15 +398,25 @@ namespace isptr
     inline
     auto weak_reference<Owner>::lock_owner() const noexcept -> strong_value_type *
     {
-        for (intptr_t value = this->m_strong.load(std::memory_order_relaxed); ; )
+        if constexpr (!weak_reference::single_threaded) 
         {
-            assert(value >= 0);
-            
-            if (value == 0)
-                return nullptr;
+            for (intptr_t value = this->m_strong.load(std::memory_order_relaxed); ; )
+            {
+                assert(value >= 0);
+                
+                if (value == 0)
+                    return nullptr;
 
-            if (this->m_strong.compare_exchange_strong(value, value + 1, std::memory_order_release, std::memory_order_relaxed))
-                return this->m_owner;
+                if (this->m_strong.compare_exchange_strong(value, value + 1, std::memory_order_release, std::memory_order_relaxed))
+                    return this->m_owner;
+            }
+        } 
+        else
+        {
+            if (this->m_strong == 0)
+                return nullptr;
+            ++this->m_strong;
+            return this->m_owner;
         }
     }
 
@@ -342,26 +425,52 @@ namespace isptr
     {
         if constexpr(!ref_counted::provides_weak_references)
         {
-            [[maybe_unused]] auto oldcount = this->m_count.fetch_add(1, std::memory_order_relaxed);
-            assert(oldcount > 0);
-            assert(oldcount < std::numeric_limits<decltype(oldcount)>::max());
+            if constexpr(!ref_counted::single_threaded)
+            {
+                [[maybe_unused]] auto oldcount = this->m_count.fetch_add(1, std::memory_order_relaxed);
+                assert(oldcount > 0);
+                assert(oldcount < std::numeric_limits<decltype(oldcount)>::max());
+            }
+            else
+            {
+                assert(this->m_count > 0);
+                assert(this->m_count > < std::numeric_limits<decltype(this->m_count)>::max());
+                ++this->m_count;
+            }
         }
         else
         {
-            for(intptr_t value = this->m_count.load(std::memory_order_relaxed); ; )
+            if constexpr(!ref_counted::single_threaded)
             {
-                assert(value != 0);
-                if (!ref_counted::is_encoded_pointer(value))
+                for(intptr_t value = this->m_count.load(std::memory_order_relaxed); ; )
                 {
-                    assert(value < std::numeric_limits<decltype(value)>::max());
-                    if (this->m_count.compare_exchange_strong(value, value + 1, std::memory_order_release, std::memory_order_relaxed))
+                    assert(value != 0);
+                    if (!ref_counted::is_encoded_pointer(value))
+                    {
+                        assert(value < std::numeric_limits<decltype(value)>::max());
+                        if (this->m_count.compare_exchange_strong(value, value + 1, std::memory_order_release, std::memory_order_relaxed))
+                            return;
+                    }
+                    else
+                    {
+                        auto ptr = ref_counted::decode_pointer<weak_value_type>(value);
+                        ptr->call_add_owner_ref();
                         return;
+                    }
                 }
-                else
+            }
+            else 
+            {
+                assert(this->m_count != 0);
+                if (!ref_counted::is_encoded_pointer(this->m_count))
                 {
-                    auto ptr = ref_counted::decode_pointer<weak_value_type>(value);
+                    assert(this->m_count < std::numeric_limits<decltype(value)>::max());
+                    ++this->m_count;
+                }
+                else 
+                {
+                    auto ptr = ref_counted::decode_pointer<weak_value_type>(this->m_count);
                     ptr->call_add_owner_ref();
-                    return;
                 }
             }
         }
@@ -372,36 +481,62 @@ namespace isptr
     {
         if constexpr(!ref_counted::provides_weak_references)
         {
-            auto oldcount = this->m_count.fetch_sub(1, std::memory_order_release);
-            assert(oldcount > 0);
-            if (oldcount == 1)
+            if constexpr(!ref_counted::single_threaded)
             {
-                std::atomic_thread_fence(std::memory_order_acquire);
-                this->call_destroy();
+                auto oldcount = this->m_count.fetch_sub(1, std::memory_order_release);
+                assert(oldcount > 0);
+                if (oldcount == 1)
+                {
+                    std::atomic_thread_fence(std::memory_order_acquire);
+                    this->call_destroy();
+                }
+            }
+            else
+            {
+                assert(this->m_count > 0);
+                if (--this->m_count == 0)
+                    this->call_destroy();
             }
         }
         else
         {
-            for (intptr_t value = this->m_count.load(std::memory_order_relaxed); ; )
+            if constexpr(!ref_counted::single_threaded)
             {
-                assert(value != 0);
-                if (!ref_counted::is_encoded_pointer(value))
+                for (intptr_t value = this->m_count.load(std::memory_order_relaxed); ; )
                 {
-                    if (this->m_count.compare_exchange_strong(value, value - 1, std::memory_order_release, std::memory_order_relaxed))
+                    assert(value != 0);
+                    if (!ref_counted::is_encoded_pointer(value))
                     {
-                        if (value == 1)
+                        if (this->m_count.compare_exchange_strong(value, value - 1, std::memory_order_release, std::memory_order_relaxed))
                         {
-                            std::atomic_thread_fence(std::memory_order_acquire);
-                            this->call_destroy();
+                            if (value == 1)
+                            {
+                                std::atomic_thread_fence(std::memory_order_acquire);
+                                this->call_destroy();
+                            }
+                            return;
                         }
+                    }
+                    else
+                    {
+                        auto ptr = ref_counted::decode_pointer<weak_value_type>(value);
+                        ptr->call_sub_owner_ref();
                         return;
                     }
                 }
+            }
+            else
+            {
+                assert(this->m_count != 0);
+                if (!ref_counted::is_encoded_pointer(this->m_count))
+                {
+                    if (--this->m_count == 0)
+                        this->call_destroy();
+                }
                 else
                 {
-                    auto ptr = ref_counted::decode_pointer<weak_value_type>(value);
+                    auto ptr = ref_counted::decode_pointer<weak_value_type>(this->m_count);
                     ptr->call_sub_owner_ref();
-                    return;
                 }
             }
         }
@@ -413,20 +548,38 @@ namespace isptr
     {
         static_assert(ref_counted::provides_weak_references, "class doesn't provide weak references");
         
-        for (intptr_t value = this->m_count.load(std::memory_order_acquire); ; )
+        if constexpr(!ref_counted::single_threaded)
         {
-            if (!ref_counted::is_encoded_pointer(value))
+            for (intptr_t value = this->m_count.load(std::memory_order_acquire); ; )
             {
-                weak_reference<Derived> * ret = this->call_make_weak_reference(value);
-                uintptr_t desired = ref_counted::encode_pointer(ret);
-                if (this->m_count.compare_exchange_strong(value, desired, std::memory_order_release, std::memory_order_relaxed))
-                    return ret;
+                if (!ref_counted::is_encoded_pointer(value))
+                {
+                    weak_reference<Derived> * ret = this->call_make_weak_reference(value);
+                    uintptr_t desired = ref_counted::encode_pointer(ret);
+                    if (this->m_count.compare_exchange_strong(value, desired, std::memory_order_release, std::memory_order_relaxed))
+                        return ret;
 
-                delete ret;
+                    delete ret;
+                }
+                else
+                {
+                    auto ptr = ref_counted::decode_pointer<weak_value_type>(value);
+                    ptr->call_add_ref();
+                    return ptr;
+                }
             }
-            else
+        }
+        else
+        {
+            if (!ref_counted::is_encoded_pointer(this->m_count))
             {
-                auto ptr = ref_counted::decode_pointer<weak_value_type>(value);
+                weak_reference<Derived> * ret = this->call_make_weak_reference(this->m_count);
+                this->m_count = ref_counted::encode_pointer(ret);
+                return ret;
+            }
+            else 
+            {
+                auto ptr = ref_counted::decode_pointer<weak_value_type>(this->m_count);
                 ptr->call_add_ref();
                 return ptr;
             }
@@ -440,22 +593,42 @@ namespace isptr
         
         if constexpr (ref_counted::provides_weak_references)
         {
-            intptr_t value = this->m_count.load(std::memory_order_relaxed);
-            if (ref_counted::is_encoded_pointer(value))
+            if constexpr(!ref_counted::single_threaded)
             {
-                auto ptr = ref_counted::decode_pointer<const weak_value_type>(value);
-                assert(valid_count(ptr->m_strong.load(std::memory_order_relaxed)));
-                ptr->call_on_owner_destruction();
-                ptr->call_sub_ref();
+                intptr_t value = this->m_count.load(std::memory_order_relaxed);
+                if (ref_counted::is_encoded_pointer(value))
+                {
+                    auto ptr = ref_counted::decode_pointer<const weak_value_type>(value);
+                    assert(valid_count(ptr->m_strong.load(std::memory_order_relaxed)));
+                    ptr->call_on_owner_destruction();
+                    ptr->call_sub_ref();
+                }
+                else
+                {
+                    assert(valid_count(value));
+                }
             }
-            else
+            else 
             {
-                assert(valid_count(value));
+                if (ref_counted::is_encoded_pointer(this->m_count))
+                {
+                    auto ptr = ref_counted::decode_pointer<const weak_value_type>(this->m_count);
+                    assert(valid_count(ptr->m_strong));
+                    ptr->call_on_owner_destruction();
+                    ptr->call_sub_ref();
+                }
+                else
+                {
+                    assert(valid_count(value));
+                }
             }
         }
         else
         {
-            assert(valid_count(this->m_count.load(std::memory_order_relaxed)));
+            if constexpr(!ref_counted::single_threaded)
+                assert(valid_count(this->m_count.load(std::memory_order_relaxed)));
+            else
+                assert(valid_count(this->m_count));
         }
     }
 }
