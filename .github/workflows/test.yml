@@ -2,9 +2,6 @@ name: Test
 
 on: [push]
 
-env:
-  BUILD_TYPE: Release
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -19,8 +16,8 @@ jobs:
     - name: Configure
       run: |
         cmake -E make_directory build
-        cmake -S test -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE 
+        cmake -S test -B build -DCMAKE_BUILD_TYPE=Release 
 
     - name: Build and Test
-      run: cmake --build build --config $BUILD_TYPE --target run-test
+      run: cmake --build build --config Release --target run-test
 
