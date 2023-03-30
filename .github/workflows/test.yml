@@ -18,9 +18,9 @@ jobs:
 
     - name: Configure
       run: |
-        cmake -E make_directory ${{runner.workspace}}/build
-        cmake -S $GITHUB_WORKSPACE/test -B ${{runner.workspace}}/build -DCMAKE_BUILD_TYPE=$BUILD_TYPE 
+        cmake -E make_directory build
+        cmake -S test -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE 
 
     - name: Build and Test
-      run: cmake --build ${{runner.workspace}}/build --config $BUILD_TYPE --target run-test
+      run: cmake --build build --config $BUILD_TYPE --target run-test
 
