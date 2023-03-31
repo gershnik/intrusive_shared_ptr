@@ -23,7 +23,7 @@ Return value of either method is ignored. The argument is never `nullptr`.
 ### Namespace Types
 
 - `template<class Traits, class T> constexpr bool are_intrusive_shared_traits` checks whether given Traits satisfy the traits requirements above for the given type T.
-- `template<class T> using is_intrusive_shared_ptr = ...` type trait that is `std::true_type` or `std::false_type` depending on whethert T is a valid `intrusive_shared_ptr` type.
+- `template<class T> using is_intrusive_shared_ptr = ...` type trait that is `std::true_type` or `std::false_type` depending on whether T is a valid `intrusive_shared_ptr` type.
 - `template<class T> bool constexpr is_intrusive_shared_ptr_v = is_intrusive_shared_ptr<T>::value;`
 
 
@@ -98,7 +98,7 @@ Provides the standard set of `std::atomic` functionality:
 
 - `using value_type = isptr::intrusive_shared_ptr<T, Traits>`
 - `static constexpr bool is_always_lock_free`
-- `constexpr atomic() noexcept`. Initalizes with null pointer.
+- `constexpr atomic() noexcept`. Initializes with null pointer.
 - `atomic(value_type desired) noexcept`
 - `atomic(const atomic&) = delete` Deleted!
 - `void operator=(const atomic&) = delete` Deleted!

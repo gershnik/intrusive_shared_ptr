@@ -181,15 +181,15 @@ namespace isptr
         
         //Weak reference pointer decoding and encoding
         template<class X>
-        static X * decode_pointer(intptr_t value) noexcept
-            { return (X *)(uintptr_t(value) << 1); }
+        static X * decode_pointer(intptr_t count) noexcept
+            { return (X *)(uintptr_t(count) << 1); }
 
         template<class X>
         static intptr_t encode_pointer(X * ptr) noexcept
             { return (uintptr_t(ptr) >> 1) | uintptr_t(std::numeric_limits<intptr_t>::min()); }
 
-        static bool is_encoded_pointer(intptr_t value) noexcept
-            { return value < 0; }
+        static bool is_encoded_pointer(intptr_t count) noexcept
+            { return count < 0; }
     private:
         mutable count_type m_count = 1;
     };
