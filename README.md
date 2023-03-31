@@ -12,7 +12,7 @@ Documentation and formal tests are work in progress.
 ## Contents
 
 * [Why bother?](#why-bother)
-  * [Named conversions from raw pointers](#conversions-from-raw-pointers)
+  * [Named conversions from raw pointers](#named-conversions-from-raw-pointers)
   * [No ADL](#no-adl)
   * [Decent support for output parameters](#decent-support-for-output-parameters)
   * [Support for `operator->*`](#support-for-operator-)
