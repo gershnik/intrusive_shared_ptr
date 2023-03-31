@@ -18,14 +18,6 @@
 namespace isptr
 {
 
-    //MARK:- helpers
-
-    namespace internal
-    {
-        template<bool Val, class... Args>
-        static constexpr bool dependent_bool = Val;
-    }
-
     //MARK:- ref_counted_flags
 
     enum class ref_counted_flags : unsigned

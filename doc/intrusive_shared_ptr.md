@@ -4,10 +4,10 @@
 
 ```cpp
 template<class T, class Traits>
-class INTRUSIVE_SHARED_PTR_TRIVIAL_ABI intrusive_shared_ptr;
+class ISPTR_TRIVIAL_ABI intrusive_shared_ptr;
 ```
 
-Macro `INTRUSIVE_SHARED_PTR_TRIVIAL_ABI` expands to `[[clang::trivial_abi]]` when compiled under clang.
+Macro `ISPTR_TRIVIAL_ABI` expands to `[[clang::trivial_abi]]` when compiled under clang.
 
 ### Traits requirements
 
