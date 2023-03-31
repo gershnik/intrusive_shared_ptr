@@ -9,38 +9,12 @@
 #ifndef HEADER_INTRUSIVE_SHARED_PTR_H_INCLUDED
 #define HEADER_INTRUSIVE_SHARED_PTR_H_INCLUDED
 
+#include <intrusive_shared_ptr/common.h>
+
 #include <type_traits>
 #include <ostream>
 #include <atomic>
 
-
-#if __cpp_constexpr >= 201907L
-
-    #define INTRUSIVE_SHARED_PTR_CONSTEXPR_SINCE_CPP20 constexpr
-
-#else 
-
-    #define INTRUSIVE_SHARED_PTR_CONSTEXPR_SINCE_CPP20
-
-#endif
-
-#if __cpp_impl_three_way_comparison >= 201907L
-
-    #include <compare>
-
-    #define INTRUSIVE_SHARED_PTR_USE_SPACESHIP_OPERATOR 1
-
-#else 
-
-    #define INTRUSIVE_SHARED_PTR_USE_SPACESHIP_OPERATOR 0
-
-#endif
-
-#ifdef __clang__
-    #define INTRUSIVE_SHARED_PTR_TRIVIAL_ABI [[clang::trivial_abi]]
-#else
-    #define INTRUSIVE_SHARED_PTR_TRIVIAL_ABI
-#endif
 
 namespace isptr
 {
@@ -68,7 +42,7 @@ namespace isptr
 
 
     template<class T, class Traits>
-    class INTRUSIVE_SHARED_PTR_TRIVIAL_ABI intrusive_shared_ptr
+    class ISPTR_TRIVIAL_ABI intrusive_shared_ptr
     {
         static_assert(are_intrusive_shared_traits<Traits, T>, "Invalid Traits for type T");
         
@@ -82,7 +56,7 @@ namespace isptr
         {
             friend class intrusive_shared_ptr<T, Traits>;
         public:
-            INTRUSIVE_SHARED_PTR_CONSTEXPR_SINCE_CPP20 ~output_param() noexcept
+            ISPTR_CONSTEXPR_SINCE_CPP20 ~output_param() noexcept
             {
                 if (m_p != m_owner->get())
                     *m_owner = intrusive_shared_ptr::noref(m_p);
@@ -178,7 +152,7 @@ namespace isptr
         }
         
         
-        INTRUSIVE_SHARED_PTR_CONSTEXPR_SINCE_CPP20 ~intrusive_shared_ptr() noexcept
+        ISPTR_CONSTEXPR_SINCE_CPP20 ~intrusive_shared_ptr() noexcept
             { this->reset(); }
 
         constexpr T * get() const noexcept
@@ -211,6 +185,8 @@ namespace isptr
             this->m_p = nullptr;
             return p;
         }
+
+        ISPTR_ALWAYS_INLINE //GCC refuses to inline this otherwise
         constexpr void reset() noexcept
         { 
             this->do_sub_ref(this->m_p);
@@ -285,7 +261,7 @@ namespace isptr
             return !(nullptr == rhs);
         }
 
-    #if INTRUSIVE_SHARED_PTR_USE_SPACESHIP_OPERATOR
+    #if ISPTR_USE_SPACESHIP_OPERATOR
 
         template<class Y, class YTraits>
         friend constexpr auto operator<=>(const intrusive_shared_ptr<T, Traits> & lhs, const intrusive_shared_ptr<Y, YTraits> & rhs) noexcept
@@ -561,9 +537,9 @@ namespace std
     };
 }
 
-#undef INTRUSIVE_SHARED_PTR_TRIVIAL_ABI
-#undef INTRUSIVE_SHARED_PTR_CONSTEXPR_SINCE_CPP20
-#undef INTRUSIVE_SHARED_PTR_USE_SPACESHIP_OPERATOR
+#undef ISPTR_TRIVIAL_ABI
+#undef ISPTR_CONSTEXPR_SINCE_CPP20
+#undef ISPTR_USE_SPACESHIP_OPERATOR
 
 #endif
 

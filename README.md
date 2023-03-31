@@ -12,7 +12,7 @@ Documentation and formal tests are work in progress.
 ## Contents
 
 * [Why bother?](#why-bother)
-  * [Named conversions from raw pointers](#conversions-from-raw-pointers)
+  * [Named conversions from raw pointers](#named-conversions-from-raw-pointers)
   * [No ADL](#no-adl)
   * [Decent support for output parameters](#decent-support-for-output-parameters)
   * [Support for `operator->*`](#support-for-operator-)
@@ -35,7 +35,7 @@ Documentation and formal tests are work in progress.
 There are multiple other intrusive smart pointers available including one from [Boost](https://www.boost.org/doc/libs/1_71_0/libs/smart_ptr/doc/html/smart_ptr.html#intrusive_ptr)
 and nowadays there is even a [proposal](http://open-std.org/JTC1/SC22/WG21/docs/papers/2016/p0468r0.html) 
 to add one to standard library C++ 2023, so why create another one?
-Unfortunately, as far as I can tell, all exisitng implementations, and that includes the standard library proposal at the time
+Unfortunately, as far as I can tell, all existing implementations, and that includes the standard library proposal at the time
 of this writing, suffer from numerous deficiencies that make them hard or annoying to use in real life code. 
 The most serious problems addressed here are as follows
 
@@ -43,7 +43,7 @@ The most serious problems addressed here are as follows
 All other libraries offer a conversion in the form 
 `smart_ptr(T * p);`
 In my opinions this is an extremely bad design. When looking at a call like `smart_ptr(foo())` can you quickly tell whether this adds a reference count or "attaches" the smart pointer to a raw one? That's right, you cannot! The answer depends 
-on the smart pointer implementation or even on specific traits used. This makes it invisible and hard to predict at the **call site** and 100% gurrantees that someone will make a wrong assumption. In my experience, almost all reference counting bugs happen on the **boundary** between C++ and C code where such conversions are abundant. 
+on the smart pointer implementation or even on specific traits used. This makes it invisible and hard to predict at the **call site** and 100% guarantees that someone will make a wrong assumption. In my experience, almost all reference counting bugs happen on the **boundary** between C++ and C code where such conversions are abundant. 
 Just like any form of dangerous cast this one has to be **explicit** in calling code (as an aside, ObjectiveC ARC did it right
 with their explicit and visible `__bridge` casts between raw and smart pointers).
 Note that having a boolean argument (like what Boost and many other implementations do) in constructor isn't a solution.
@@ -55,7 +55,7 @@ This library uses named functions to perform conversion. You see exactly what is
 
 Many libraries use [ADL](https://en.wikipedia.org/wiki/Argument-dependent_name_lookup) to find "add reference" and 
 "release reference" functions for the underlying type.
-That is they have expressions like `add_ref(p)` in their implementation, and exepct a function named `add_ref` that accepts pointer to the underlying type is supposed to be found via ADL.
+That is they have expressions like `add_ref(p)` in their implementation, and expect a function named `add_ref` that accepts pointer to the underlying type is supposed to be found via ADL.
 This solution is great in many cases but it breaks when working with some C types like Apple's `CTypeRef`. This one is actually a typedef to `void *` so if you have an `add_ref` that accepts it, you have just made every unrelated `void *` reference counted (with very bad results if you accidentally put a wrong one into a smart pointer).
 A better approach to defining how reference counting is done is to pass a traits class to the smart pointer. (The standard library proposal gets this one right).
 
@@ -65,7 +65,7 @@ This library uses traits
 
 Often times you need to pass smart pointer as an output parameter to a C function that takes `T **`
 Many other smart pointers either 
-- ignore this scenario, requiring you to intriduce extra raw pointer and unsafe code, or
+- ignore this scenario, requiring you to introduce extra raw pointer and unsafe code, or
 - overload `operator&` which is a horrendously bad idea (it breaks lots of generic code which assumes that `&foo` gives
   an address of foo, not something else)
 The right solution is to have a proxy class convertible to `T **`.
@@ -82,7 +82,7 @@ you can always work around it via `(*p).*whatever` but in generic code this is n
 
 ### Atomic access
 
-Somettimes you need to operate on smart pointers atomically. To the best of my knowledge noo library currently provides this functionality.
+Sometimes you need to operate on smart pointers atomically. To the best of my knowledge no library currently provides this functionality.
 
 This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending to it the normal `std::atomic` semantics.
 
@@ -109,7 +109,7 @@ This library allows to enable a decent implementation of weak pointers via polic
 
 ## Usage 
 
-All the types in this library are declared in `namespace isptr`. For brievity the namespace is omitted below.
+All the types in this library are declared in `namespace isptr`. For brevity the namespace is omitted below.
 Add `isptr::` prefix to all the type or use `using` declaration in your own code.
 
 The header `<intrusive_shared_ptr/intrusive_shared_ptr.h>` provides a template
@@ -148,7 +148,7 @@ template<class T, class Traits>
 intrusive_shared_ptr<T, Traits> intrusive_shared_ptr<T, Traits>::ref(T * p) noexcept
 ```
 
-It is possibel to use `intrusive_shared_ptr` directly but the name is long and ugly so a better approach is to
+It is possible to use `intrusive_shared_ptr` directly but the name is long and ugly so a better approach is to
 wrap in a typedef and wrapper functions like this
 
 ```cpp
@@ -259,8 +259,8 @@ More details can be found in [this document](doc/ref_counted.md)
 
 ### Supporting weak pointers
 
-If you want to support weak pointers you need to tell `ref_counted` about it. Since wak pointers include overhead
-even if you never create one by defualt they are disabled.
+If you want to support weak pointers you need to tell `ref_counted` about it. Since weak pointers include overhead
+even if you never create one by default they are disabled.
 
 ```cpp
 #include <intrusive_shared_ptr/ref_counted.h>

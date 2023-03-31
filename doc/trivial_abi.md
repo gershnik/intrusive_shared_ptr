@@ -3,7 +3,7 @@ for performance can be found [here](https://quuxplusone.github.io/blog/2018/05/0
 Another take on the performance issue as a comment on standard library proposal can be found 
 [here](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1351r0.html#params).
 
-However, using trivial ABI with a type that has non trivial destructor (and of course a smart pointer destructor is non-trivial - it has to decrement reference count!) imeddiately raises serious objections. Such use makes the
+However, using trivial ABI with a type that has non trivial destructor (and of course a smart pointer destructor is non-trivial - it has to decrement reference count!) immediately raises serious objections. Such use makes the
 destructor run *out of order* inside the called function whereas destructors of other parameters run after the
 function exits. While on theoretical level this is indeed wrong, the interesting question is whether it can ever matter
 in practice. 

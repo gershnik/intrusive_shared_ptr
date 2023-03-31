@@ -73,8 +73,11 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
         test_general.cpp
         test_main.cpp
         test_ref_counted.cpp
+        test_ref_counted_st.cpp
         test_weak_ref_counted.cpp
+        test_weak_ref_counted_st.cpp
         test_abstract_ref_counted.cpp
+        test_abstract_ref_counted_st.cpp
         test_delegating_traits.cpp
 
         mocks.h

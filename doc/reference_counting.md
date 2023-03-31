@@ -40,14 +40,14 @@ private:
 };
 ```
 
-Now the first fundamnetal problem. What should the reference count be initialized to in object constructor: 
+Now the first fundamental problem. What should the reference count be initialized to in object constructor: 
 1 or 0? People who use flawed smart pointers with a simple constructor `smart_ptr(T * p)` that always 
 bumps the count tend to like 0. This way the object gets the desired one as soon as you stuff it into a smart_ptr.
 
 Unfortunately, this turns out to be a bad idea from two different angles. 
 One is performance. Having to always increment count right after construction is a performance penalty. A small
 penalty but penalty nonetheless. Starting from 1 avoids it.
-The second problem is that while in th body of the constructor you have an object with a 0 reference count. 
+The second problem is that while in the body of the constructor you have an object with a 0 reference count. 
 Now, the body of the constructor is a tricky place. Consider what happens if you create a smart pointer out of `this` 
 within the constructor. This can happen if you call a function that expects a smart pointer parameter 
 (e.g. `register_callback(smart_ptr(this))`) and the function does not store the pointer. In this case the count 
@@ -67,9 +67,9 @@ foo::foo():
 }
 ```
 
-and `function_that_may_throw_exception` actually throws. In this case external code posseses a pointer to an 
+and `function_that_may_throw_exception` actually throws. In this case external code possesses a pointer to an 
 object that failed to construct. Its base classes are destroyed and it is dead from C++ point of view. Nevertheless,
-the external code will have a live pointer to it and, worse, invoke destuctor when reference coint goes to 0.
+the external code will have a live pointer to it and, worse, invoke destructor when reference count goes to 0.
 Note that there is nothing special about this situation - the same bad effect can be achieved with raw pointers if we
 give `this` away before an exception is thrown. However, using smart pointers can provide false sense of security here.
 The general rule for any C++ class is:
@@ -112,17 +112,17 @@ don't care, is, again, a performance penalty.
 Second consider what does it mean to add a reference to an object that is undergoing destruction. Conceivably the code
 that added the reference can then store the pointer expecting the object to be safely alive. Then it can try to 
 use it later but the object has been already destroyed. Once you think more about it you realize that this is 
-the famous  "finalize ressurection" problem (https://en.wikipedia.org/wiki/Object_resurrection) in another form. 
+the famous  "finalize resurrection" problem (https://en.wikipedia.org/wiki/Object_resurrection) in another form. 
 Unfortunately, or rather fortunately, C++ doesn't allow you to "abandon" or "postpone" destruction. Once the 
 destructor has been entered the object will become dead. 
 
 It is possible to re-invent the whole notion of finalizer (a separate function called before the destructor) and
-ressurection for reference counting but doing so is a lot of work and doing it correctly is very tricky. The
+resurrection for reference counting but doing so is a lot of work and doing it correctly is very tricky. The
 experience with finalizers in other languages is not encouraging.
 
 Instead, consider why would you ever need to give out a reference to an object from a destructor. Constructor 
 case is obvious: you might want to register for some callback or notification from somewhere else. You might think
-that in a destructor it would be the oppiste: deregister the object, but this is wrong. The very fact that you 
+that in a destructor it would be the opposite: deregister the object, but this is wrong. The very fact that you 
 *are* in a destructor means that no place else in the code has any knowledge of the object. There is nowhere to
 deregister or disconnect from. (It is certainly possible that other places have *weak* references to the object, but
 those do not concern us here - there is no issue in creating a *weak* pointer to `this` in destructor and deregistering 
@@ -130,7 +130,7 @@ those do not concern us here - there is no issue in creating a *weak* pointer to
 
 With this in mind, the only sane approach seems to be to disallow adding a reference to an object that is being 
 destroyed, period. Any attempt to do so likely indicates a design or implementation mistake. You could detect this
-sitation (bumping the count from 0) and call `terminate()` or, do it in debug mode only via `assert`.
+situation (bumping the count from 0) and call `terminate()` or, do it in debug mode only via `assert`.
 
 
 ```cpp
