@@ -10,42 +10,33 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - name: Get release Name
+        shell: python
+        run: |
+          import os
+          ref = os.environ['GITHUB_REF']
+          name = ref[ref.rfind('/') + 2:]
+          with open(os.environ['GITHUB_ENV'], 'w') as env:
+            print('RELEASE_NAME=' + name, file=env) 
+
       - name: Zip Headers
         shell: bash
-        working-directory: ${{github.workspace}}
-        run: tar -czf intrusive_shared_ptr.tar.gz --transform 's/inc/intrusive_shared_ptr\/inc/' inc
+        run: tar -czf intrusive_shared_ptr-${{ env.RELEASE_NAME }}.tar.gz --transform 's/inc/intrusive_shared_ptr\/inc/' inc
 
-      - id: get-release-name
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const tagName = context.ref.substring(context.ref.lastIndexOf('/') + 2)
-            core.setOutput('name', tagName)
-      
-      - name: Release
-        uses: actions/create-release@v1
+      - name: Make release
+        uses: softprops/action-gh-release@v1
         id: create_release
         with:
           draft: true
           prerelease: false
-          release_name: ${{ steps.get-release-name.outputs.name }}
-          tag_name: ${{ github.ref }}
+          name: ${{ env.RELEASE_NAME }}
           body: ...edit me...
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Upload headers
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{github.workspace}}/intrusive_shared_ptr.tar.gz
-          asset_name: intrusive_shared_ptr-${{ steps.get-release-name.outputs.name }}.tar.gz
-          asset_content_type: application/gzip
+          files: |
+            intrusive_shared_ptr-${{ env.RELEASE_NAME }}.tar.gz
+          
       
