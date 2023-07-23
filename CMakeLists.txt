@@ -6,21 +6,28 @@
 # https://github.com/gershnik/intrusive_shared_ptr/blob/master/LICENSE.txt
 #
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.25)
 
+file(READ VERSION ISPTR_VERSION)
+if (NOT ISPTR_VERSION)
+    message(FATAL_ERROR "Cannot determine library version (VERSION file not found)")
+endif()
+string(STRIP ${ISPTR_VERSION} ISPTR_VERSION)
+
+project(isptr VERSION ${ISPTR_VERSION} LANGUAGES CXX)
 
 set(SRCDIR ${CMAKE_CURRENT_LIST_DIR})
-set(LIBNAME intrusive-shared-ptr)
+set(LIBNAME isptr)
 
 add_library(${LIBNAME} INTERFACE)
 
 target_include_directories(${LIBNAME}
 INTERFACE
-    ${SRCDIR}/inc
+    $<BUILD_INTERFACE:${SRCDIR}/inc>
+    $<INSTALL_INTERFACE:include>  # <prefix>/include
 )
 
-target_sources(${LIBNAME} 
-PRIVATE 
+set(PUBLIC_HEADERS 
     ${SRCDIR}/inc/intrusive_shared_ptr/intrusive_shared_ptr.h
     ${SRCDIR}/inc/intrusive_shared_ptr/apple_cf_ptr.h
     ${SRCDIR}/inc/intrusive_shared_ptr/com_ptr.h
@@ -29,3 +36,21 @@ PRIVATE
     ${SRCDIR}/inc/intrusive_shared_ptr/ref_counted.h
 )
 
+target_sources(${LIBNAME} 
+INTERFACE 
+    FILE_SET HEADERS BASE_DIRS ${SRCDIR}/inc FILES
+        ${PUBLIC_HEADERS}
+PRIVATE 
+    ${PUBLIC_HEADERS}
+)
+
+add_library(intrusive-shared-ptr ALIAS isptr)
+add_library(isptr::isptr ALIAS isptr)
+
+if (PROJECT_IS_TOP_LEVEL)
+
+    include(cmake/install.cmake)
+
+    add_subdirectory(test)
+
+endif()

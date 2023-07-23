@@ -1,12 +1,9 @@
-cmake_minimum_required(VERSION 3.10)
-cmake_policy(SET CMP0092 NEW)
+#cmake_policy(SET CMP0092 NEW)
 
 if (WIN32)
 set(CMAKE_SYSTEM_VERSION "10.0.19041.0" CACHE STRING "Windows SDK Version" FORCE)
 endif()
 
-
-project(test)
 
 find_package (Python3 COMPONENTS Interpreter Development)
 
@@ -20,8 +17,6 @@ if(${Python3_Development_FOUND})
         ${Python3_LIBRARIES}
     )
 endif()
-
-add_subdirectory(..  lib)
 
 set (TEST_SUFFIXES
     17
@@ -46,7 +41,7 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
     )
 
     target_link_libraries(test-${TEST_SUFFIX} PRIVATE
-        intrusive-shared-ptr
+        isptr::isptr
     )
 
     target_compile_options(test-${TEST_SUFFIX} PRIVATE

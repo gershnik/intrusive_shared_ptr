@@ -1,0 +1,10 @@
+prefix=${pcfiledir}/@FROM_PCFILEDIR_TO_PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: isptr
+Description: Yet another implementation of an intrusive reference counting for C++
+Version: @PROJECT_VERSION@
+Requires:
+Cflags: -I${includedir}
+Libs: 
