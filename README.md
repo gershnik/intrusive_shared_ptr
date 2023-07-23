@@ -11,8 +11,6 @@ Documentation and formal tests are work in progress.
 
 <!-- TOC depthfrom:2 -->
 
-- [Intro](#intro)
-- [Contents](#contents)
 - [Why bother?](#why-bother)
     - [Named conversions from raw pointers](#named-conversions-from-raw-pointers)
     - [No ADL](#no-adl)
