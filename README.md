@@ -189,7 +189,7 @@ before running `pkg-config`
 
 ### Copying to your sources
 
-You can also simply download the headers of this repository from [Releases](releases) page 
+You can also simply download the headers of this repository from [Releases](https://github.com/gershnik/intrusive_shared_ptr/releases) page 
 (named `intrusive_shared_ptr-X.Y.tar.gz`), unpack it somewhere in your source tree and add it to your include path.
 
 
