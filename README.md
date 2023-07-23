@@ -107,6 +107,83 @@ Continuing on the base class theme, when doing intrusive reference counting, sup
 This library allows to enable a decent implementation of weak pointers via policy based design. 
 
 
+## Integration
+
+### CMake via FetchContent
+
+```cmake
+include(FetchContent)
+...
+FetchContent_Declare(isptr
+    GIT_REPOSITORY  https://github.com/gershnik/intrusive_shared_ptr.git
+    GIT_TAG         v1.4  #use the tag, branch or sha you need
+    GIT_SHALLOW     TRUE
+)
+...
+FetchContent_MakeAvailable(isptr)
+...
+target_link_libraries(mytarget
+PRIVATE
+  isptr::isptr
+)
+```
+> ℹ&#xFE0F; _[What is FetchContent?](https://cmake.org/cmake/help/latest/module/FetchContent.html)_
+
+### Building and installing on your system
+
+You can also build and install this library on your system using CMake.
+
+1. Download or clone this repository into SOME_PATH
+2. On command line:
+```bash
+cd SOME_PATH
+cmake -S . -B build 
+cmake --build build
+
+#Optional
+#cmake --build build --target run-test
+
+#install to /usr/local
+sudo cmake --install build
+#or for a different prefix
+#cmake --install build --prefix /usr
+```
+
+Once the library has been installed it can be used int the following ways:
+
+#### Basic use 
+
+Set the include directory to `<prefix>/include` where `<prefix>` is the install prefix from above.
+
+#### CMake package
+
+```cmake
+find_package(isptr)
+
+target_link_libraries(mytarget
+PRIVATE
+  isptr::isptr
+)
+```
+
+#### Via `pkg-config`
+
+Add the output of `pkg-config --cflags isptr` to your compiler flags.
+
+Note that the default installation prefix `/usr/local` might not be in the list of places your
+`pkg-config` looks into. If so you might need to do:
+```bash
+export PKG_CONFIG_PATH=/usr/local/share/pkgconfig
+```
+before running `pkg-config`
+
+
+### Copying to your sources
+
+You can also simply download the headers of this repository from [Releases](releases) page 
+(named `intrusive_shared_ptr-X.Y.tar.gz`), unpack it somewhere in your source tree and add it to your include path.
+
+
 ## Usage 
 
 All the types in this library are declared in `namespace isptr`. For brevity the namespace is omitted below.
