@@ -1,11 +1,11 @@
 # Intro 
 This is yet another implementation of an intrusive [reference counting](http://en.wikipedia.org/wiki/Reference_counting) 
 [smart pointer](http://en.wikipedia.org/wiki/Smart_pointer), highly configurable reference counted base class and adapters.
-The code requires C++17 compatible compiler.
-It had been tested with:<br/>
-Xcode 11, 12 and 13<br/>
-Microsoft Visual Studio 2019 and 2022<br/>
-GCC 7.4.0, 9.4.0 and 12.1.0<br/>
+The code requires C++17 or above compiler.
+It is known to work with:<br/>
+Xcode 11 or above<br/>
+Microsoft Visual Studio 2019 or above<br/>
+GCC 7.4.0 or above<br/>
 
 Documentation and formal tests are work in progress.
 
