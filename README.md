@@ -1,4 +1,4 @@
-## Intro 
+# Intro 
 This is yet another implementation of an intrusive [reference counting](http://en.wikipedia.org/wiki/Reference_counting) 
 [smart pointer](http://en.wikipedia.org/wiki/Smart_pointer), highly configurable reference counted base class and adapters.
 The code requires C++17 compatible compiler.
@@ -9,27 +9,38 @@ GCC 7.4.0, 9.4.0 and 12.1.0<br/>
 
 Documentation and formal tests are work in progress.
 
-## Contents
+<!-- TOC depthfrom:2 -->
 
-* [Why bother?](#why-bother)
-  * [Named conversions from raw pointers](#named-conversions-from-raw-pointers)
-  * [No ADL](#no-adl)
-  * [Decent support for output parameters](#decent-support-for-output-parameters)
-  * [Support for `operator->*`](#support-for-operator-)
-  * [Atomic access](#atomic-access)
-  * [Trivial ABI](#trivial-abi)
-  * [Correct implementation of a "reference counted base" class](#correct-implementation-of-a-reference-counted-base-class)
-  * [Support for weak pointers](#support-for-weak-pointers)
-* [Usage](#usage)
-  * [Using provided base classes](#using-provided-base-classes)
-  * [Supporting weak pointers](#supporting-weak-pointers)
-  * [Using with Apple CoreFoundation types](#using-with-apple-corefoundation-types)
-  * [Using with Microsoft COM interfaces](#using-with-microsoft-com-interfaces)
-  * [Using with Python objects](#using-with-python-objects)
-  * [Using with non-reference counted types](#using-with-non-reference-counted-types)
-* [Atomic operations](#atomic-operations)
-* [Constexpr functionality](#constexpr-functionality)
-* [Reference](#reference)
+- [Intro](#intro)
+- [Contents](#contents)
+- [Why bother?](#why-bother)
+    - [Named conversions from raw pointers](#named-conversions-from-raw-pointers)
+    - [No ADL](#no-adl)
+    - [Decent support for output parameters](#decent-support-for-output-parameters)
+    - [Support for operator->*](#support-for-operator-)
+    - [Atomic access](#atomic-access)
+    - [Trivial ABI](#trivial-abi)
+    - [Correct implementation of a "reference counted base" class](#correct-implementation-of-a-reference-counted-base-class)
+    - [Support for weak pointers](#support-for-weak-pointers)
+- [Integration](#integration)
+    - [CMake via FetchContent](#cmake-via-fetchcontent)
+    - [Building and installing on your system](#building-and-installing-on-your-system)
+        - [Basic use](#basic-use)
+        - [CMake package](#cmake-package)
+        - [Via pkg-config](#via-pkg-config)
+    - [Copying to your sources](#copying-to-your-sources)
+- [Usage](#usage)
+    - [Using provided base classes](#using-provided-base-classes)
+    - [Supporting weak pointers](#supporting-weak-pointers)
+    - [Using with Apple CoreFoundation types](#using-with-apple-corefoundation-types)
+    - [Using with Microsoft COM interfaces](#using-with-microsoft-com-interfaces)
+    - [Using with Python objects](#using-with-python-objects)
+    - [Using with non-reference counted types](#using-with-non-reference-counted-types)
+    - [Atomic operations](#atomic-operations)
+- [Constexpr functionality](#constexpr-functionality)
+- [Reference](#reference)
+
+<!-- /TOC -->
 
 ## Why bother?
 There are multiple other intrusive smart pointers available including one from [Boost](https://www.boost.org/doc/libs/1_71_0/libs/smart_ptr/doc/html/smart_ptr.html#intrusive_ptr)

@@ -1,6 +1,14 @@
 name: Test
 
-on: [push]
+on: 
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'CHANGELOG.md'
+      - 'doc/**'
+      - 'tools/**'
 
 jobs:
   build:
