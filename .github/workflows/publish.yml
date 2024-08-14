@@ -11,7 +11,7 @@ jobs:
     permissions: write-all
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get release Name
         shell: python
@@ -27,7 +27,7 @@ jobs:
         run: tar -czf intrusive_shared_ptr-${{ env.RELEASE_NAME }}.tar.gz --transform 's/inc/intrusive_shared_ptr\/inc/' inc
 
       - name: Make release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         id: create_release
         with:
           draft: true

@@ -20,23 +20,29 @@ jobs:
         - os: macos-latest
         - os: windows-latest
         - os: ubuntu-latest
-          cc: gcc-11
-          cxx: g++-11
+          compiler: gcc
+          version: 11
         - os: ubuntu-latest
-          cc: gcc-12
-          cxx: g++-12
+          compiler: gcc
+          version: 12
         - os: ubuntu-latest
-          cc: gcc-13
-          cxx: g++-13
+          compiler: gcc
+          version: 13
         - os: ubuntu-latest
-          cc: clang-13
-          cxx: clang++-13
+          compiler: clang
+          version: 13
         - os: ubuntu-latest
-          cc: clang-14
-          cxx: clang++-14
+          compiler: clang
+          version: 14
         - os: ubuntu-latest
-          cc: clang-15
-          cxx: clang++-15
+          compiler: clang
+          version: 15
+        - os: ubuntu-latest
+          compiler: clang
+          version: 16
+        - os: ubuntu-latest
+          compiler: clang
+          version: 17
 
     steps:
     - name: Checkout
@@ -46,31 +52,26 @@ jobs:
       shell: bash
       run: |
         if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
-          if [[ '${{ matrix.cc }}' == 'clang-15' ]]; then
-            sudo apt-get update
-            sudo apt-get install -y clang-15 clang++-15
+          if [[ '${{ matrix.compiler }}' == 'clang' ]]; then
+            wget https://apt.llvm.org/llvm.sh
+            chmod u+x llvm.sh
+            sudo ./llvm.sh ${{ matrix.version }}
+            echo "CC=clang-${{ matrix.version }}" >> $GITHUB_ENV
+            echo "CXX=clang++-${{ matrix.version }}" >> $GITHUB_ENV
           fi
 
-          if [[ '${{ matrix.cc }}' == 'gcc-12' ]]; then
+          if [[ '${{ matrix.compiler }}' == 'gcc' ]]; then
+            sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
             sudo apt-get update
-            sudo apt-get install -y gcc-12 g++-12
-          fi
-
-          if [[ '${{ matrix.cc }}' == 'gcc-13' ]]; then
-            sudo apt-get update
-            sudo apt-get install -y gcc-13 g++-13
+            sudo apt-get install -y gcc-${{ matrix.version }} g++-${{ matrix.version }}
+            echo "CC=gcc-${{ matrix.version }}" >> $GITHUB_ENV
+            echo "CXX=g++-${{ matrix.version }}" >> $GITHUB_ENV
           fi
         fi
 
     - name: Configure
       shell: bash
       run: |
-        if [[ '${{ matrix.cc }}' != '' ]]; then
-          export CC=${{ matrix.cc }}
-        fi
-        if [[ '${{ matrix.cxx }}' != '' ]]; then
-          export CXX=${{ matrix.cxx }}
-        fi
         cmake -S . -B build -DCMAKE_BUILD_TYPE=Release 
 
     - name: Build and Test
