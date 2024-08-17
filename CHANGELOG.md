@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [1.5] - 2024-08-16
+
 ### Added
 - C++ module support (experimental). The library can now be used as C++ module. See [README](https://github.com/gershnik/intrusive_shared_ptr/) for details.
 
@@ -45,3 +47,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [1.2]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.2
 [1.3]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.3
 [1.4]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.4
+[1.5]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.5
