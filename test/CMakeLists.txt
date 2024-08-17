@@ -5,18 +5,19 @@ set(CMAKE_SYSTEM_VERSION "10.0.19041.0" CACHE STRING "Windows SDK Version" FORCE
 endif()
 
 
-find_package (Python3 COMPONENTS Interpreter Development)
+include(FetchContent)
 
-if(${Python3_Development_FOUND})
-    include_directories(
-    SYSTEM
-        ${Python3_INCLUDE_DIRS}
-    )
+FetchContent_Declare(doctest
+    URL  https://raw.githubusercontent.com/doctest/doctest/v2.4.11/doctest/doctest.h
+    DOWNLOAD_NO_EXTRACT TRUE
+)
 
-    link_libraries(
-        ${Python3_LIBRARIES}
-    )
+FetchContent_MakeAvailable(doctest)
+
+if(ISPTR_ENABLE_PYTHON AND NOT Python3_Development_FOUND)
+    find_package (Python3 COMPONENTS Development REQUIRED)
 endif()
+
 
 set (TEST_SUFFIXES
     17
@@ -26,61 +27,93 @@ set (TEST_SUFFIXES
 set(CXX_STANDARD_17 17)
 set(CXX_STANDARD_20 20)
 
+set(TEST_VARIANTS_17 "headers")
+if (${ISPTR_PROVIDE_MODULE})
+    set(TEST_VARIANTS_20 "headers;module")
+else()
+    set(TEST_VARIANTS_20 "headers")
+endif()
+
 set(TEST_COMMAND "")
 
 foreach(TEST_SUFFIX ${TEST_SUFFIXES})
 
-    add_executable(test-${TEST_SUFFIX})
+    foreach(TEST_VARIANT ${TEST_VARIANTS_${TEST_SUFFIX}})
 
-    set_target_properties(test-${TEST_SUFFIX} PROPERTIES
-        CXX_STANDARD ${CXX_STANDARD_${TEST_SUFFIX}}
-        CXX_STANDARD_REQUIRED OFF
-        CXX_EXTENSIONS OFF
-        CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN ON
-    )
+        set(TEST_TARGET_NAME test-${TEST_SUFFIX}-${TEST_VARIANT})
 
-    target_link_libraries(test-${TEST_SUFFIX} PRIVATE
-        isptr::isptr
-    )
+        add_executable(${TEST_TARGET_NAME})
 
-    target_compile_options(test-${TEST_SUFFIX} PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:/W4;/WX>
-        $<$<CXX_COMPILER_ID:Clang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
-        $<$<CXX_COMPILER_ID:AppleClang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
-        $<$<CXX_COMPILER_ID:GNU>:-Wall;-Wextra;-pedantic>
-    )
+        set_target_properties(${TEST_TARGET_NAME} PROPERTIES
+            CXX_STANDARD ${CXX_STANDARD_${TEST_SUFFIX}}
+            CXX_STANDARD_REQUIRED OFF
+            CXX_EXTENSIONS OFF
+            CXX_VISIBILITY_PRESET hidden
+            VISIBILITY_INLINES_HIDDEN ON 
+        )
 
-    target_link_libraries(test-${TEST_SUFFIX} PRIVATE
-        "$<$<PLATFORM_ID:Darwin>:-framework CoreFoundation>"
-    )
+        if("${TEST_VARIANT}" STREQUAL "module")
+            set_target_properties(${TEST_TARGET_NAME} PROPERTIES
+                CXX_SCAN_FOR_MODULES ON
+            )
+        endif()
 
-    target_compile_definitions(test-${TEST_SUFFIX} PRIVATE
-        $<$<BOOL:${Python3_Development_FOUND}>:ISPTR_USE_PYTHON=1>
-    )
+        target_include_directories(${TEST_TARGET_NAME} PRIVATE
+            ${doctest_SOURCE_DIR}
+        )
 
-    target_sources(test-${TEST_SUFFIX} PRIVATE
+        if (ISPTR_ENABLE_PYTHON)
+            target_link_libraries(${TEST_TARGET_NAME} PRIVATE
+                ${Python3_LIBRARIES}
+            )
+            target_include_directories(${TEST_TARGET_NAME} SYSTEM PRIVATE
+                ${Python3_INCLUDE_DIRS}
+            )
+        endif()
 
-        test_apple_cf_ptr.cpp
-        test_atomic.cpp
-        test_com_ptr.cpp
-        test_python_ptr.cpp
-        test_general.cpp
-        test_main.cpp
-        test_ref_counted.cpp
-        test_ref_counted_st.cpp
-        test_weak_ref_counted.cpp
-        test_weak_ref_counted_st.cpp
-        test_abstract_ref_counted.cpp
-        test_abstract_ref_counted_st.cpp
-        test_delegating_traits.cpp
+        target_link_libraries(${TEST_TARGET_NAME} PRIVATE
+            "$<$<PLATFORM_ID:Darwin>:-framework CoreFoundation>"
+            $<IF:$<STREQUAL:${TEST_VARIANT},module>,isptrm::isptrm,isptr::isptr>
+        )
 
-        mocks.h
-        catch.hpp
-    )
+        target_compile_options(${TEST_TARGET_NAME} PRIVATE
+            $<$<CXX_COMPILER_ID:MSVC>:/W4;/WX>
+            $<$<CXX_COMPILER_ID:Clang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
+            $<$<CXX_COMPILER_ID:AppleClang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
+            $<$<CXX_COMPILER_ID:GNU>:-Wall;-Wextra;-pedantic;-Wno-self-move>
+        )
 
-    list(APPEND TEST_COMMAND COMMAND)
-    list(APPEND TEST_COMMAND test-${TEST_SUFFIX})
+        target_compile_definitions(${TEST_TARGET_NAME} PRIVATE
+            $<$<BOOL:${ISPTR_ENABLE_PYTHON}>:ISPTR_USE_PYTHON=1>
+            $<$<STREQUAL:${TEST_VARIANT},module>:ISPTR_USE_MODULES=1>
+            _FILE_OFFSET_BITS=64  # prevents weird issues with modules and clang on Ubuntu
+        )
+
+        target_sources(${TEST_TARGET_NAME} PRIVATE
+
+            test_apple_cf_ptr.cpp
+            test_atomic.cpp
+            test_com_ptr.cpp
+            test_python_ptr.cpp
+            test_general.cpp
+            test_main.cpp
+            test_ref_counted.cpp
+            test_ref_counted_st.cpp
+            test_weak_ref_counted.cpp
+            test_weak_ref_counted_st.cpp
+            test_abstract_ref_counted.cpp
+            test_abstract_ref_counted_st.cpp
+            test_delegating_traits.cpp
+
+            mocks.h
+        )
+
+        list(APPEND TEST_COMMAND COMMAND)
+        list(APPEND TEST_COMMAND echo Running: ${TEST_TARGET_NAME})
+        list(APPEND TEST_COMMAND COMMAND)
+        list(APPEND TEST_COMMAND ${TEST_TARGET_NAME})
+
+    endforeach()
 
 endforeach()
 

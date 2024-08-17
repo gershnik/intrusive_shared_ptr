@@ -3,3 +3,6 @@
 .vs
 /build/
 /**/out/
+
+*.pdb
+CMakeSettings.json

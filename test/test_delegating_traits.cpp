@@ -1,7 +1,15 @@
-#include <intrusive_shared_ptr/ref_counted.h>
-#include <intrusive_shared_ptr/refcnt_ptr.h>
+#if ISPTR_USE_MODULES
+    import isptr;
+#else
+    #include <intrusive_shared_ptr/ref_counted.h>
+    #include <intrusive_shared_ptr/refcnt_ptr.h>
+#endif
 
-#include "catch.hpp"
+#include "doctest.h"
+
+#include <type_traits>
+#include <cstdint>
+#include <cstddef>
 
 using namespace isptr;
 
@@ -219,7 +227,9 @@ namespace
     };
 }
 
-TEST_CASE( "Inner counting", "[inner_ref_counted]" ) {
+TEST_SUITE("inner_ref_counted") {
+
+TEST_CASE( "Inner counting" ) {
     
     auto pouter = refcnt_attach(new outer());
     auto pinner = pouter->get_inner_ptr();
@@ -228,9 +238,9 @@ TEST_CASE( "Inner counting", "[inner_ref_counted]" ) {
     CHECK(pouter->inner() == 3);
 }
 
-TEST_CASE( "Weak inner counting", "[inner_ref_counted]" ) {
+TEST_CASE( "Weak inner counting" ) {
     
-    SECTION( "Non const" ) {
+    SUBCASE( "Non const" ) {
         auto pouter = refcnt_attach(new weak_outer());
         auto pinner1 = pouter->get_inner_ptr();
         CHECK(pinner1);
@@ -243,7 +253,7 @@ TEST_CASE( "Weak inner counting", "[inner_ref_counted]" ) {
         CHECK(pinner2 == pinner1);
     }
     
-    SECTION( "Const" ) {
+    SUBCASE( "Const" ) {
         auto pouter = refcnt_attach(const_cast<const weak_outer *>(new weak_outer()));
         auto pinner1 = pouter->get_inner_ptr();
         CHECK(pinner1);
@@ -255,4 +265,6 @@ TEST_CASE( "Weak inner counting", "[inner_ref_counted]" ) {
         auto pinner2 = strong_cast(weak2);
         CHECK(pinner2 == pinner1);
     }
+}
+
 }

@@ -30,10 +30,12 @@ namespace isptr
     template<class T>
     using py_ptr = intrusive_shared_ptr<T, py_traits>;
 
+    ISPTR_EXPORTED
     template<class T>
     py_ptr<T> py_retain(T * ptr) {
         return py_ptr<T>::ref(ptr);
     }
+    ISPTR_EXPORTED
     template<class T>
     py_ptr<T> py_attach(T * ptr) {
         return py_ptr<T>::noref(ptr);
@@ -41,4 +43,3 @@ namespace isptr
 }
 
 #endif
-

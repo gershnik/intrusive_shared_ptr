@@ -27,13 +27,16 @@ namespace isptr
             { ptr->Release(); }
     };
 
+    ISPTR_EXPORTED
     template<class T>
     using com_shared_ptr = intrusive_shared_ptr<T, com_traits>;
 
+    ISPTR_EXPORTED
     template<class T>
     com_shared_ptr<T> com_retain(T * ptr) {
         return com_shared_ptr<T>::ref(ptr);
     }
+    ISPTR_EXPORTED
     template<class T>
     com_shared_ptr<T> com_attach(T * ptr) {
         return com_shared_ptr<T>::noref(ptr);

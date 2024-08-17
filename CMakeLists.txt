@@ -16,6 +16,11 @@ string(STRIP ${ISPTR_VERSION} ISPTR_VERSION)
 
 project(isptr VERSION ${ISPTR_VERSION} LANGUAGES CXX)
 
+
+option(ISPTR_PROVIDE_MODULE "whether C++ module target should be provided" OFF)
+option(ISPTR_ENABLE_PYTHON "whether to enable Python support in C++ module" OFF)
+
+
 set(SRCDIR ${CMAKE_CURRENT_LIST_DIR})
 set(LIBNAME isptr)
 
@@ -44,8 +49,66 @@ PRIVATE
     ${PUBLIC_HEADERS}
 )
 
-add_library(intrusive-shared-ptr ALIAS isptr)
-add_library(isptr::isptr ALIAS isptr)
+add_library(intrusive-shared-ptr ALIAS ${LIBNAME})
+add_library(${LIBNAME}::${LIBNAME} ALIAS ${LIBNAME})
+
+if(ISPTR_PROVIDE_MODULE)
+
+    if(ISPTR_ENABLE_PYTHON AND NOT Python3_Development_FOUND)
+        find_package (Python3 COMPONENTS Development REQUIRED)
+    endif()
+
+    add_library(${LIBNAME}m_helper INTERFACE)
+    add_library(${LIBNAME}m::helper ALIAS ${LIBNAME}m_helper)
+
+    if (ISPTR_ENABLE_PYTHON)
+
+        target_include_directories(${LIBNAME}m_helper SYSTEM
+        INTERFACE
+            ${Python3_INCLUDE_DIRS}
+        )
+
+        target_link_libraries(${LIBNAME}m_helper 
+        INTERFACE
+            ${Python3_LIBRARIES}
+        )
+
+        target_compile_definitions(${LIBNAME}m_helper 
+        INTERFACE
+            ISPTR_ENABLE_PYTHON=1
+        )
+
+    endif()
+
+    add_library(${LIBNAME}m OBJECT)
+
+    target_compile_features(${LIBNAME}m
+    PUBLIC
+        cxx_std_20
+    )
+
+    set_target_properties(${LIBNAME}m PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON 
+    )
+
+    target_link_libraries(${LIBNAME}m
+    PRIVATE
+        $<BUILD_INTERFACE:${LIBNAME}m::helper>
+    )
+
+    target_sources(${LIBNAME}m
+    PUBLIC 
+        FILE_SET CXX_MODULES BASE_DIRS ${SRCDIR}/modules FILES
+            ${SRCDIR}/modules/isptr.cppm
+    )
+
+    add_library(${LIBNAME}m::${LIBNAME}m ALIAS ${LIBNAME}m)
+
+endif()
 
 if (PROJECT_IS_TOP_LEVEL)
 

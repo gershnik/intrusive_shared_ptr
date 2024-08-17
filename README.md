@@ -36,6 +36,7 @@ Documentation and formal tests are work in progress.
     - [Using with non-reference counted types](#using-with-non-reference-counted-types)
     - [Atomic operations](#atomic-operations)
 - [Constexpr functionality](#constexpr-functionality)
+- [Module support](#module-support)
 - [Reference](#reference)
 
 <!-- /TOC -->
@@ -123,9 +124,14 @@ This library allows to enable a decent implementation of weak pointers via polic
 ```cmake
 include(FetchContent)
 ...
+#Uncomment the next line to enable use of C++ module
+#set(ISPTR_PROVIDE_MODULE ON)
+#Uncomment the next line to enable Python pointers in C++ module 
+#set(ISPTR_ENABLE_PYTHON ON)
+
 FetchContent_Declare(isptr
     GIT_REPOSITORY  https://github.com/gershnik/intrusive_shared_ptr.git
-    GIT_TAG         v1.4  #use the tag, branch or sha you need
+    GIT_TAG         v1.5  #use the tag, branch or sha you need
     GIT_SHALLOW     TRUE
 )
 ...
@@ -133,7 +139,10 @@ FetchContent_MakeAvailable(isptr)
 ...
 target_link_libraries(mytarget
 PRIVATE
+  #To use header files:
   isptr::isptr
+  #To use C++ module use the following instead (note the *m*):
+  #isptrm::isptrm
 )
 ```
 > ℹ&#xFE0F; _[What is FetchContent?](https://cmake.org/cmake/help/latest/module/FetchContent.html)_
@@ -147,6 +156,8 @@ You can also build and install this library on your system using CMake.
 ```bash
 cd SOME_PATH
 cmake -S . -B build 
+# If you want to enable use of C++ modules use the following
+# cmake -S . -B build -DISPTR_PROVIDE_MODULE=ON
 cmake --build build
 
 #Optional
@@ -162,16 +173,30 @@ Once the library has been installed it can be used int the following ways:
 
 #### Basic use 
 
-Set the include directory to `<prefix>/include` where `<prefix>` is the install prefix from above.
+To use the header files set the include directory to `<prefix>/include` where `<prefix>` 
+is the install prefix from above.
+
+To use C++ module (if enabled during the build) include `<prefix>/lib/isptr/isptr.cppm` in your
+build. To have the module expose Python smart pointers make sure you `-DISPTR_ENABLE_PYTHON=1` for
+**module file compilation**.
+
 
 #### CMake package
 
 ```cmake
+#Uncomment the next line to enable use of C++ module
+#set(ISPTR_PROVIDE_MODULE ON)
+#Uncomment the next line to enable Python pointers in C++ module 
+#set(ISPTR_ENABLE_PYTHON ON)
+
 find_package(isptr)
 
 target_link_libraries(mytarget
 PRIVATE
+  #To use header files:
   isptr::isptr
+  #To use C++ module use the following instead (note the *m*):
+  #isptrm::isptrm
 )
 ```
 
@@ -189,8 +214,11 @@ before running `pkg-config`
 
 ### Copying to your sources
 
-You can also simply download the headers of this repository from [Releases](https://github.com/gershnik/intrusive_shared_ptr/releases) page 
-(named `intrusive_shared_ptr-X.Y.tar.gz`), unpack it somewhere in your source tree and add it to your include path.
+You can also simply download this repository from [Releases](https://github.com/gershnik/intrusive_shared_ptr/releases) page 
+(named `intrusive_shared_ptr-X.Y.tar.gz`) and unpack it somewhere in your source tree.
+
+To use header files add the `inc` sub-directory to your include path.
+To use the module add `modules/isptr.cppm` to your build. To have the module expose Python smart pointers make sure you `-DISPTR_ENABLE_PYTHON=1` for **module file compilation**.
 
 
 ## Usage 
@@ -198,7 +226,7 @@ You can also simply download the headers of this repository from [Releases](http
 All the types in this library are declared in `namespace isptr`. For brevity the namespace is omitted below.
 Add `isptr::` prefix to all the type or use `using` declaration in your own code.
 
-The header `<intrusive_shared_ptr/intrusive_shared_ptr.h>` provides a template
+The header `<intrusive_shared_ptr/intrusive_shared_ptr.h>`/module `isptr` provides a template
 
 ```cpp
 template<class T, class Traits>
@@ -267,6 +295,10 @@ exposed as inner type `refcnt_ptr_traits`. You can use it like this:
 
 ```cpp
 #include <intrusive_shared_ptr/refcnt_ptr.h>
+//Or, if using modules:
+//import isptr;
+
+using namespace isptr;
 
 struct my_type
 {
@@ -301,6 +333,10 @@ To implement `my_type` above the library provides a base class you can inherit f
 ```cpp
 #include <intrusive_shared_ptr/ref_counted.h>
 #include <intrusive_shared_ptr/refcnt_ptr.h>
+//Or, if using modules:
+//import isptr;
+
+using namespace isptr;
 
 class foo : ref_counted<foo>
 {
@@ -351,6 +387,10 @@ even if you never create one by default they are disabled.
 ```cpp
 #include <intrusive_shared_ptr/ref_counted.h>
 #include <intrusive_shared_ptr/refcnt_ptr.h>
+//Or, if using modules:
+//import isptr;
+
+using namespace isptr;
 
 class foo : weak_ref_counted<foo> //alias for ref_counted<foo, ref_counted_flags::provide_weak_references>
 {
@@ -370,9 +410,15 @@ More details can be found in [this document](doc/ref_counted.md)
 ```cpp
 
 #include <intrusive_shared_ptr/apple_cf_ptr.h>
+//Or, if using modules:
+//import isptr;
+
+using namespace isptr;
 
 //Use auto in real code. Type is spelled out for clarity
-cf_ptr<CStringRef> str = cf_attach(CFStringCreateWithCString(nullptr, "Hello", kCFStringEncodingUTF8));
+cf_ptr<CStringRef> str = cf_attach(CFStringCreateWithCString(nullptr, 
+                                                             "Hello", 
+                                                             kCFStringEncodingUTF8));
 std::cout << CFStringGetLength(str.get());
 
 CFArrayRef raw = ...;
@@ -386,6 +432,10 @@ cf_ptr<CFArrayRef> array = cf_retain(raw);
 ```cpp
 
 #include <intrusive_shared_ptr/com_ptr.h>
+//Or, if using modules:
+//import isptr;
+
+using namespace isptr;
 
 com_shared_ptr<IStream> pStream;
 CreateStreamOnHGlobal(nullptr, true, pStream.get_output_param());
@@ -397,11 +447,18 @@ pStream->Write(....);
 
 ```cpp
 #include <intrusive_shared_ptr/python_ptr.h>
+//Or, if using modules:
+//import isptr;
+
+using namespace isptr;
 
 auto str = py_attach(PyUnicode_FromString("Hello"));
 std::cout << PyUnicode_GetLength(str.get());
 
 ```
+
+Note that to use Python smart pointers with C++ module you need ensure `-DISPTR_ENABLE_PYTHON=1` is used for **module file compilation**. When using CMake this is accomplished by `set(ISPTR_ENABLE_PYTHON ON)` in CMake code or via 
+`-DISPTR_ENABLE_PYTHON=ON` during configuration. 
 
 ### Using with non-reference counted types
 
@@ -412,6 +469,8 @@ In such situation you can use an adapter (if you prefer derivation) or wrapper (
 Adapter:
 ```cpp
 #include <intrusive_shared_ptr/ref_counted.h>
+//Or, if using modules:
+//import isptr;
 
 using counted_map = ref_counted_adapter<std::map<string, int>>;
 
@@ -431,6 +490,8 @@ refcnt_ptr<weakly_counted_map> p2 = w1->lock();
 Wrapper:
 ```cpp
 #include <intrusive_shared_ptr/ref_counted.h>
+//Or, if using modules:
+//import isptr;
 
 using counted_map = ref_counted_wrapper<std::map<string, int>>;
 
@@ -496,6 +557,29 @@ constexpr my_ptr foo;
 ```
 
 Due to non-default destructors this functionality is not available on C++17
+
+## Module support
+
+Since version 1.5 this library support being used as a C++ module. This mode is currently **experimental**. Please report bugs if you encounter any issues.
+
+In order to use C++ modules you need a compiler that supports them. Currently CLang >= 16 and MSVC toolset >= 14.34 are definitely known to work. Other compilers/versions may or may not work.
+
+If using CMake follow the requirements at [cmake-cxxmodules](https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html). In order to enable module support for this library you need to set `ISPTR_PROVIDE_MODULE` CMake variable to `ON` before referencing it. 
+
+The library consists of a single module file at [modules/isptr.cppm](modules/isptr.cppm). This file is auto-generated from all the library headers.
+
+One notable difference between headers and module use concerns Python pointers. With header files you can simply control whether to use them by including or not including `<intrusive_shared_ptr/python_ptr.h>`. 
+
+With module, which is compiled separately, you need to tell the module file whether to enable Python pointers (and use `<Python.h>` header) ahead of time. 
+
+If you compile module yourself you can control whether Python pointers are enabled by setting `-DISPTR_ENABLE_PYTHON=1` for its compilation and make sure the include path contains `<Python.h>`.
+
+If you use CMake then you need to set CMake option `ISPTR_ENABLE_PYTHON` to `ON` either from command line or in CMake code before referencing this library. With this variable set to `ON` the CMake script will
+- Perform `find_package (Python3 COMPONENTS Development REQUIRED)` if Python development component hasn't been already found.
+- Add `Python3_INCLUDE_DIRS` to module include path and define `ISPTR_ENABLE_PYTHON=1`
+- Add `Python3_LIBRARIES` to library dependencies. 
+
+You can control which Python installation to use by controlling `find_package (Python3)` (or calling it yourself ahead of time) as described in [FindPython3](https://cmake.org/cmake/help/latest/module/FindPython3.html)
 
 ## Reference
 

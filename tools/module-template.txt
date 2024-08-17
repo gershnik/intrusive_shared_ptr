@@ -1,0 +1,23 @@
+/*
+ Copyright 2024 Eugene Gershnik
+
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file or at
+ https://github.com/gershnik/intrusive_shared_ptr/blob/master/LICENSE.txt
+*/
+module;
+
+##SYS_INCLUDES##
+
+export module isptr;
+
+#define ISPTR_EXPORTED export 
+
+#include "intrusive_shared_ptr.h"
+#include "ref_counted.h"
+#include "apple_cf_ptr.h"
+#include "com_ptr.h"
+#if ISPTR_ENABLE_PYTHON
+#include "python_ptr.h"
+#endif
+#include "refcnt_ptr.h"

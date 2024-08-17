@@ -1,7 +1,15 @@
-#include <intrusive_shared_ptr/ref_counted.h>
-#include <intrusive_shared_ptr/refcnt_ptr.h>
+#if ISPTR_USE_MODULES
+    import isptr;
+#else
+    #include <intrusive_shared_ptr/ref_counted.h>
+    #include <intrusive_shared_ptr/refcnt_ptr.h>
+#endif
 
-#include "catch.hpp"
+#include "doctest.h"
+
+#include <vector>
+#include <stdexcept>
+
 
 using namespace isptr;
 
@@ -81,17 +89,18 @@ namespace
 
 }
 
+TEST_SUITE("ref_counted_st") {
 
-TEST_CASE( "Minimal st ref counted works", "[ref_counted_st]") {
+TEST_CASE( "Minimal st ref counted works" ) {
 
-    SECTION("derived") {
+    SUBCASE("derived") {
         auto p1 = refcnt_attach(new minimal_counted());
         CHECK(p1);
         auto p2 = p1;
         CHECK(p2 == p1);
     }
     
-    SECTION("adapted") {
+    SUBCASE("adapted") {
         auto p1 = refcnt_attach(new minimal_adapded_counted(adapded{'a'}));
         CHECK(p1);
         CHECK(p1->c == 'a');
@@ -99,7 +108,7 @@ TEST_CASE( "Minimal st ref counted works", "[ref_counted_st]") {
         CHECK(p2 == p1);
     }
     
-    SECTION("wrapped") {
+    SUBCASE("wrapped") {
         auto p1 = refcnt_attach(new minimal_wrapped_counted('a'));
         CHECK(p1);
         CHECK(p1->wrapped == 'a');
@@ -108,7 +117,7 @@ TEST_CASE( "Minimal st ref counted works", "[ref_counted_st]") {
     }
 }
 
-TEST_CASE( "Simple st ref counted works", "[ref_counted_st]") {
+TEST_CASE( "Simple st ref counted works" ) {
     
     auto p1 = refcnt_attach(new simple_counted());
     CHECK(simple_counted::instance_count == 1);
@@ -120,7 +129,7 @@ TEST_CASE( "Simple st ref counted works", "[ref_counted_st]") {
     CHECK(simple_counted::instance_count == 0);
 }
 
-TEST_CASE( "St ref counted with ctor exception", "[ref_counted_st]") {
+TEST_CASE( "St ref counted with ctor exception" ) {
     
     try
     {
@@ -132,7 +141,7 @@ TEST_CASE( "St ref counted with ctor exception", "[ref_counted_st]") {
     }
 }
 
-TEST_CASE( "Custom destroy st", "[ref_counted_st]") {
+TEST_CASE( "Custom destroy st" ) {
     
     
     struct custom_destroy : ref_counted_st<custom_destroy>
@@ -157,14 +166,16 @@ TEST_CASE( "Custom destroy st", "[ref_counted_st]") {
     
 }
 
-TEST_CASE( "St ref counted wrapper", "[ref_counted_st]") {
+TEST_CASE( "St ref counted wrapper" ) {
 
-    SECTION("adapter") {
+    SUBCASE("adapter") {
         auto p1 = refcnt_attach(new ref_counted_adapter_st<std::vector<char>>(5));
         CHECK( p1->size() == 5 );
     }
-    SECTION("wrapper") {
+    SUBCASE("wrapper") {
         auto p1 = refcnt_attach(new ref_counted_wrapper_st<std::vector<char>>(5));
         CHECK( p1->wrapped.size() == 5 );
     }
+}
+
 }

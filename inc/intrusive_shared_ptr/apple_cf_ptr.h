@@ -25,13 +25,16 @@ namespace isptr
             { CFRelease(ptr); }
     };
 
+    ISPTR_EXPORTED
     template<class T>
     using cf_ptr = intrusive_shared_ptr<std::remove_pointer_t<T>, cf_traits>;
 
+    ISPTR_EXPORTED
     template<class T>
     cf_ptr<T *> cf_retain(T * ptr) {
         return cf_ptr<T *>::ref(ptr);
     }
+    ISPTR_EXPORTED
     template<class T>
     cf_ptr<T *> cf_attach(T * ptr) {
         return cf_ptr<T *>::noref(ptr);

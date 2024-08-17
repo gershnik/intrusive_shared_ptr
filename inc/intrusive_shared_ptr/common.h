@@ -50,11 +50,15 @@
 
 #endif
 
+#ifndef ISPTR_EXPORTED
+    #define ISPTR_EXPORTED
+#endif
+
 
 namespace isptr::internal
 {
     template<bool Val, class... Args>
-    static constexpr bool dependent_bool = Val;
+    constexpr bool dependent_bool = Val;
 }
 
 

@@ -1,7 +1,13 @@
-#include <intrusive_shared_ptr/ref_counted.h>
-#include <intrusive_shared_ptr/refcnt_ptr.h>
+#if ISPTR_USE_MODULES
+    import isptr;
+#else
+    #include <intrusive_shared_ptr/ref_counted.h>
+    #include <intrusive_shared_ptr/refcnt_ptr.h>
+#endif
 
-#include "catch.hpp"
+#include "doctest.h"
+#include <type_traits>
+#include <cstdint>
 
 using namespace isptr;
 
@@ -127,10 +133,11 @@ namespace
     };
 }
 
+TEST_SUITE("abstract_ref_counted") {
 
-TEST_CASE( "Abstract ref counted works", "[abstract_ref_counted]") {
+TEST_CASE( "Abstract ref counted works" ) {
     
-    SECTION( "Simple" ) {
+    SUBCASE( "Simple" ) {
         auto p = refcnt_attach(new simple());
         decltype(p) p1 = p;
         p1.reset();
@@ -163,3 +170,4 @@ TEST_CASE( "Abstract ref counted works", "[abstract_ref_counted]") {
     }
 }
 
+}

@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Added
+- C++ module support (experimental). The library can now be used as C++ module. See [README](https://github.com/gershnik/intrusive_shared_ptr/) for details.
+
+### Fixed
+- `weak_reference::single_threaded` flag is made `constexpr` rather than `static const`
+
 ## [1.4] - 2023-07-22
 
 ### Changed

@@ -1,0 +1,144 @@
+#! /usr/bin/env -S python3 -u
+
+#  Copyright 2024 Eugene Gershnik
+#
+#  Use of this source code is governed by a BSD-style
+#  license that can be found in the LICENSE file or at
+#  https://github.com/gershnik/intrusive_shared_ptr/blob/master/LICENSE
+#
+
+# pylint: disable=missing-module-docstring, missing-function-docstring, line-too-long
+
+import sys
+import re
+from pathlib import Path
+from typing import Dict, List
+
+
+comment_start_re = re.compile(r'\s*/\*.*')
+comment_end_re = re.compile(r'.*\*/\s*')
+sys_include_re = re.compile(r'\s*#\s*include\s+<([^>]+)>\s*')
+lib_include_re = re.compile(r'\s*#\s*include\s+<intrusive_shared_ptr/([^>]+)>\s*')
+user_include_re = re.compile(r'\s*#\s*include\s+"([^"]+)"\s*')
+
+
+SKELETON = '''
+/*
+ Copyright 2004 Eugene Gershnik
+
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file or at
+ https://github.com/gershnik/intrusive_shared_ptr/blob/master/LICENSE.txt
+*/
+module;
+
+##SYS_INCLUDES##
+
+export module isptr;
+
+#define ISPTR_EXPORTED export 
+
+#include "intrusive_shared_ptr.h"
+#include "ref_counted.h"
+#include "apple_cf_ptr.h"
+#include "com_ptr.h"
+#include "python_ptr.h"
+#include "refcnt_ptr.h"
+'''.lstrip()
+
+SPECIAL_HEADERS = {
+    'CoreFoundation/CoreFoundation.h': 
+'''
+#if (defined(__APPLE__) && defined(__MACH__))
+    ##INCLUDE##
+#endif
+'''.lstrip(),
+
+    'Unknwn.h':
+'''
+#if defined(_WIN32)
+    #define NOMINMAX
+    ##INCLUDE##
+#endif
+'''.lstrip(),
+
+    'Python.h':
+'''
+#if ISPTR_ENABLE_PYTHON
+    ##INCLUDE##
+#endif
+'''.lstrip()
+}
+
+
+def process_header(folder: Path, path: Path, sys_includes: List[str], processed_headers:Dict[str, bool], strip_initial_comment: bool):
+
+    ret = ""
+    initial_comment_state = 0
+    with open(path, "rt", encoding='utf-8') as headerfile:
+        for line in headerfile:
+            if strip_initial_comment:
+                if initial_comment_state == 0:
+                    m = comment_start_re.match(line)
+                    if m:
+                        initial_comment_state = 1
+                        continue
+                elif initial_comment_state == 1:
+                    m = comment_end_re.match(line)
+                    if m:
+                        initial_comment_state = 2
+                    continue
+            
+            m = user_include_re.match(line)
+            if not m:
+                m = lib_include_re.match(line)
+            if m:
+                name = m.group(1)
+                if not processed_headers.get(name):
+                    new_path = (folder / name).absolute()
+                    ret += process_header(new_path.parent, new_path, sys_includes, processed_headers, strip_initial_comment=True)
+                    processed_headers[name] = True
+                continue
+
+            m = sys_include_re.match(line)
+            if m:
+                sys_includes.append(m.group(1))
+                continue
+
+            ret += line
+
+    return ret
+
+
+def combine_headers(folder: Path, template: Path, output: Path):
+    sys_includes = []
+    processed_headers = {}
+
+    text = process_header(folder, template, sys_includes, processed_headers, strip_initial_comment=False)
+
+    sys_includes = list(set(sys_includes))
+    sys_includes.sort()
+    sys_includes_text = ""
+    for sys_include in sys_includes:
+        inc_line = f"#include <{sys_include}>"
+        if (repl := SPECIAL_HEADERS.get(sys_include)) is not None:
+            repl = repl.replace('##INCLUDE##', inc_line)
+        else:
+            repl = inc_line
+        sys_includes_text += ("\n" + repl)
+
+    text = text.replace("##SYS_INCLUDES##", sys_includes_text)
+    
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with open(output, "wt", encoding='utf-8') as outfile:
+        print(text, file=outfile)
+
+def main():
+    mydir = Path(__file__).parent
+    incdir = mydir.parent / 'inc/intrusive_shared_ptr'
+    moddir = mydir.parent / 'modules'
+
+    combine_headers(incdir, mydir / 'module-template.txt', moddir / 'isptr.cppm')
+
+if __name__ == "__main__":
+    sys.exit(main())

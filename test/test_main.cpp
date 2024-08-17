@@ -1,5 +1,6 @@
-#define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
+#define DOCTEST_CONFIG_IMPLEMENT
+
+#include <doctest.h>
 
 #if ISPTR_USE_PYTHON
     #include <Python.h>
@@ -10,7 +11,7 @@ int main(int argc, char** argv)
 #if ISPTR_USE_PYTHON
     Py_Initialize();
 #endif
-    int ret = Catch::Session().run( argc, argv );
+    int ret = doctest::Context(argc, argv).run();
 #if ISPTR_USE_PYTHON
     if (Py_FinalizeEx() < 0) {
         return 120;

@@ -1,17 +1,25 @@
-#include <intrusive_shared_ptr/intrusive_shared_ptr.h>
+#if ISPTR_USE_MODULES
+    import isptr;
+#else
+    #include <intrusive_shared_ptr/intrusive_shared_ptr.h>
+#endif
+
+#include "doctest.h"
+#include "mocks.h"
 
 #include <sstream>
-
-#include "catch.hpp"
-#include "mocks.h"
+#include <type_traits>
+#include <cstdint>
 
 using namespace isptr;
 
-TEST_CASE( "Type traits are correct", "[traits]") {
+TEST_SUITE("traits") {
+
+TEST_CASE( "Type traits are correct" ) {
 
     using ptr = mock_ptr<instrumented_counted<1>>;
 
-    SECTION("Construction, destruction and assignment") {
+    SUBCASE("Construction, destruction and assignment") {
 
         CHECK( sizeof(ptr) == sizeof(instrumented_counted<1> *) );
         CHECK( std::alignment_of_v<ptr> == std::alignment_of_v<instrumented_counted<1> *> );
@@ -51,7 +59,7 @@ TEST_CASE( "Type traits are correct", "[traits]") {
 
     using another_ptr = mock_ptr<derived_instrumented_counted<1>>;
     
-    SECTION( "Conversions to/from other ptr types" ) {
+    SUBCASE( "Conversions to/from other ptr types" ) {
 
         CHECK( std::is_convertible_v<another_ptr, ptr> );
         
@@ -69,7 +77,7 @@ TEST_CASE( "Type traits are correct", "[traits]") {
     }
 
     using ptr_different_traits = mock_ptr_different_traits<instrumented_counted<1>>;
-    SECTION( "Conversions to/from other traits" ) {
+    SUBCASE( "Conversions to/from other traits" ) {
 
         CHECK( std::is_convertible_v<ptr_different_traits, ptr> );
         CHECK( std::is_convertible_v<ptr, ptr_different_traits> );
@@ -98,26 +106,31 @@ using IncompatibleTypes = std::tuple<bool,
                                      mock_ptr<instrumented_counted<2>>
 >;
 
-TEMPLATE_LIST_TEST_CASE( "Conversion and assignment from other types", "[traits]",  IncompatibleTypes) {
+TEST_CASE_TEMPLATE_DEFINE( "Conversion and assignment from other types",  TestType, conv_assign_incompat) {
 
     using ptr = mock_ptr<instrumented_counted<1>>;
 
     CHECK( !std::is_constructible_v<ptr, TestType> );
     CHECK( !std::is_assignable_v<ptr, TestType> );
 }
+TEST_CASE_TEMPLATE_APPLY(conv_assign_incompat, IncompatibleTypes);
 
-TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nullptr ", "[empty]" ) {
+}
+
+TEST_SUITE("empty") {
+
+TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nullptr " ) {
 
     mock_ptr<instrumented_counted<>> empty;
 
-    SECTION("Default constructed") {
+    SUBCASE("Default constructed") {
         
         CHECK(empty.get() == nullptr);
         CHECK(!bool(empty));
         CHECK(empty.operator->() == nullptr);
     }
 
-    SECTION("Construsted from nullptr") {
+    SUBCASE("Construsted from nullptr") {
         mock_ptr<instrumented_counted<>> empty1(nullptr);
 
         CHECK(empty1.get() == nullptr);
@@ -125,7 +138,7 @@ TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nu
         CHECK(empty1.operator->() == nullptr);
     }
 
-    SECTION( "Comparing to another empty ptr" ) {
+    SUBCASE( "Comparing to another empty ptr" ) {
         mock_ptr<instrumented_counted<>> empty1;
 
         CHECK(empty == empty1);
@@ -137,7 +150,7 @@ TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nu
         
     }
 
-    SECTION( "Comparing to a ptr created from nullptr" ) {
+    SUBCASE( "Comparing to a ptr created from nullptr" ) {
 
         mock_ptr<instrumented_counted<>> empty1(nullptr);
 
@@ -149,7 +162,7 @@ TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nu
         CHECK(empty >= empty1);
     }
 
-    SECTION( "Comparing to nullptr" ) {
+    SUBCASE( "Comparing to nullptr" ) {
 
         CHECK(empty == nullptr);
         CHECK(nullptr == empty );
@@ -157,7 +170,7 @@ TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nu
         CHECK(!(nullptr != empty));
     }
 
-    SECTION( "Comparing to raw pointer" ) {
+    SUBCASE( "Comparing to raw pointer" ) {
 
         instrumented_counted<> * raw = nullptr;
 
@@ -175,7 +188,7 @@ TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nu
         CHECK(raw >= empty);
     }
 
-    SECTION( "Comparing to void pointer" ) {
+    SUBCASE( "Comparing to void pointer" ) {
 
         void * raw = nullptr;
 
@@ -193,7 +206,7 @@ TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nu
         CHECK(raw >= empty);
     }
 
-    SECTION( "Comparing to different traits" ) {
+    SUBCASE( "Comparing to different traits" ) {
 
         mock_ptr_different_traits<instrumented_counted<>> empty1;
         
@@ -206,9 +219,13 @@ TEST_CASE( "Default constructed and constructed from nullptr ptr behaves like nu
     }
 }
 
-TEST_CASE( "Basic counting ", "[counting]") {
+}
 
-    SECTION( "Attach" ) {
+TEST_SUITE("counting") {
+
+TEST_CASE( "Basic counting " ) {
+
+    SUBCASE( "Attach" ) {
 
         instrumented_counted<> object;
         auto ptr = mock_noref(&object);
@@ -218,7 +235,7 @@ TEST_CASE( "Basic counting ", "[counting]") {
         CHECK(ptr.operator->() == &object);
     }
 
-    SECTION( "Ref" ) {
+    SUBCASE( "Ref" ) {
 
         instrumented_counted<> object;
         auto ptr = mock_ref(&object);
@@ -230,7 +247,7 @@ TEST_CASE( "Basic counting ", "[counting]") {
         mock_traits<>::sub_ref(&object);
     }
 
-    SECTION( "Release" ) {
+    SUBCASE( "Release" ) {
 
         instrumented_counted<> object;
         auto ptr = mock_noref(&object);
@@ -244,7 +261,7 @@ TEST_CASE( "Basic counting ", "[counting]") {
         mock_traits<>::sub_ref(&object);
     }
 
-    SECTION( "Reset" ) {
+    SUBCASE( "Reset" ) {
 
         instrumented_counted<> object;
         auto ptr = mock_noref(&object);
@@ -255,7 +272,7 @@ TEST_CASE( "Basic counting ", "[counting]") {
         CHECK(ptr.operator->() == nullptr);
     }
 
-    SECTION( "Copy and assignment" ) {
+    SUBCASE( "Copy and assignment" ) {
 
         instrumented_counted<> object;
         auto ptr = mock_noref(&object);
@@ -276,7 +293,7 @@ TEST_CASE( "Basic counting ", "[counting]") {
         REQUIRE( object.count == 5 );
     }
 
-    SECTION( "Self assignment" ) {
+    SUBCASE( "Self assignment" ) {
 
         instrumented_counted<> object;
         auto ptr = mock_noref(&object);
@@ -289,7 +306,7 @@ TEST_CASE( "Basic counting ", "[counting]") {
         REQUIRE( object.count == 1 );
     }
 
-    SECTION( " Swap ") {
+    SUBCASE( " Swap ") {
 
         instrumented_counted<> object1, object2;
         auto ptr1 = mock_noref(&object1);
@@ -315,9 +332,9 @@ TEST_CASE( "Basic counting ", "[counting]") {
 
 }
 
-TEST_CASE( "Conversions ", "[counting]") {
+TEST_CASE( "Conversions " ) {
 
-    SECTION( "Attach" ) {
+    SUBCASE( "Attach" ) {
 
         derived_instrumented_counted<> object;
         mock_ptr<instrumented_counted<>> ptr = mock_noref(&object);
@@ -327,7 +344,7 @@ TEST_CASE( "Conversions ", "[counting]") {
         CHECK(ptr.operator->() == &object);
     }
 
-    SECTION( "Ref" ) {
+    SUBCASE( "Ref" ) {
 
         derived_instrumented_counted<> object;
         mock_ptr<instrumented_counted<>> ptr = mock_ref(&object);
@@ -339,7 +356,7 @@ TEST_CASE( "Conversions ", "[counting]") {
         mock_traits<>::sub_ref(&object);
     }
 
-    SECTION( "Release" ) {
+    SUBCASE( "Release" ) {
 
         derived_instrumented_counted<> object;
         mock_ptr<instrumented_counted<>> ptr = mock_noref(&object);
@@ -353,7 +370,7 @@ TEST_CASE( "Conversions ", "[counting]") {
         mock_traits<>::sub_ref(&object);
     }
 
-    SECTION( "Reset" ) {
+    SUBCASE( "Reset" ) {
 
         derived_instrumented_counted<> object;
         mock_ptr<instrumented_counted<>> ptr = mock_noref(&object);
@@ -364,7 +381,7 @@ TEST_CASE( "Conversions ", "[counting]") {
         CHECK(ptr.operator->() == nullptr);
     }
 
-    SECTION( "Copy and assignment" ) {
+    SUBCASE( "Copy and assignment" ) {
 
         derived_instrumented_counted<> object;
         auto ptr = mock_noref(&object);
@@ -387,9 +404,9 @@ TEST_CASE( "Conversions ", "[counting]") {
 
 }
 
-TEST_CASE( "Different traits ", "[counting]") {
+TEST_CASE( "Different traits " ) {
 
-    SECTION( "Copy" ) {
+    SUBCASE( "Copy" ) {
 
         instrumented_counted<> object;
         mock_ptr_different_traits<instrumented_counted<>> ptr = mock_noref_different_traits(&object);
@@ -398,7 +415,7 @@ TEST_CASE( "Different traits ", "[counting]") {
         REQUIRE( object.count == 2 );
     }
 
-    SECTION( "Move" ) {
+    SUBCASE( "Move" ) {
 
         instrumented_counted<> object;
         mock_ptr_different_traits<instrumented_counted<>> ptr = mock_noref_different_traits(&object);
@@ -408,7 +425,7 @@ TEST_CASE( "Different traits ", "[counting]") {
     }
 }
 
-TEST_CASE( "Casts", "[counting]") {
+TEST_CASE( "Casts" ) {
 
     derived_instrumented_counted<> object;
     const instrumented_counted<> const_object;
@@ -418,7 +435,7 @@ TEST_CASE( "Casts", "[counting]") {
     auto ptr_const = mock_noref(&const_object);
     auto ptr_derived = mock_noref(&derived_object);
 
-    SECTION( "Const cast" ) {
+    SUBCASE( "Const cast" ) {
 
         auto res = intrusive_const_cast<mock_ptr<instrumented_counted<>>>(ptr_const);
         CHECK( res.get() == &const_object );
@@ -429,7 +446,7 @@ TEST_CASE( "Casts", "[counting]") {
         CHECK( const_object.count == 2 );
     }
 
-    SECTION( "Dynamic cast" ) {
+    SUBCASE( "Dynamic cast" ) {
 
         auto res = intrusive_dynamic_cast<mock_ptr<derived_instrumented_counted<>>>(ptr);
         CHECK( res.get() == &object );
@@ -446,7 +463,7 @@ TEST_CASE( "Casts", "[counting]") {
         CHECK( !res1 );
     }
 
-    SECTION( "Static cast" ) {
+    SUBCASE( "Static cast" ) {
 
         auto res = intrusive_static_cast<mock_ptr<derived_instrumented_counted<>>>(ptr);
         CHECK( res.get() == &object );
@@ -459,7 +476,11 @@ TEST_CASE( "Casts", "[counting]") {
 
 }
 
-TEST_CASE( "Output", "[output]") {
+}
+
+TEST_SUITE("output") {
+
+TEST_CASE( "Output" ) {
 
     instrumented_counted<> object;
     auto ptr = mock_noref(&object);
@@ -475,7 +496,11 @@ TEST_CASE( "Output", "[output]") {
     CHECK( str1.str() == str2.str() );
 }
 
-TEST_CASE( "Output param", "[output_param]") {
+}
+
+TEST_SUITE("output param") {
+
+TEST_CASE( "Output param" ) {
 
     instrumented_counted<> object, object1;
     auto ptr = mock_noref(&object);
@@ -492,7 +517,7 @@ TEST_CASE( "Output param", "[output_param]") {
     CHECK( object1.count == 2 );
 }
 
-TEST_CASE( "Member pointer", "[output_param]") {
+TEST_CASE( "Member pointer" ) {
 
     instrumented_counted<> object;
     auto ptr = mock_noref(&object);
@@ -501,4 +526,6 @@ TEST_CASE( "Member pointer", "[output_param]") {
     
     auto x = ptr->*pcount;
     CHECK(x == 1);
+}
+
 }

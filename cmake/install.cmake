@@ -12,6 +12,11 @@ include(CMakePackageConfigHelpers)
 install(TARGETS isptr EXPORT isptr FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT isptr NAMESPACE isptr:: FILE isptr-exports.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/isptr)
 
+if (ISPTR_PROVIDE_MODULE)
+    install(TARGETS isptrm EXPORT isptrm FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_LIBDIR}/isptr)
+    install(EXPORT isptrm NAMESPACE isptrm:: FILE isptrm-exports.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/isptr)
+endif()
+
 configure_package_config_file(
         ${CMAKE_CURRENT_LIST_DIR}/isptr-config.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/isptr-config.cmake

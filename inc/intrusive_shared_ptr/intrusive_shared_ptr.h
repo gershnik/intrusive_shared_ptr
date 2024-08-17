@@ -41,6 +41,7 @@ namespace isptr
                                                  std::is_nothrow_invocable_v<internal::sub_ref_detector, Traits *, T *>;
 
 
+    ISPTR_EXPORTED
     template<class T, class Traits>
     class ISPTR_TRIVIAL_ABI intrusive_shared_ptr
     {
@@ -396,6 +397,7 @@ namespace isptr
 
 
 
+    ISPTR_EXPORTED
     template<class Dest, class Src, class Traits>
     inline constexpr
     std::enable_if_t<is_intrusive_shared_ptr_v<Dest>,
@@ -404,6 +406,7 @@ namespace isptr
         return Dest::noref(const_cast<typename Dest::pointer>(p.release()));
     }
 
+    ISPTR_EXPORTED
     template<class Dest, class Src, class Traits>
     inline constexpr
     std::enable_if_t<is_intrusive_shared_ptr_v<Dest>,
@@ -418,6 +421,7 @@ namespace isptr
         return Dest();
     }
 
+    ISPTR_EXPORTED
     template<class Dest, class Src, class Traits>
     inline constexpr
     std::enable_if_t<is_intrusive_shared_ptr_v<Dest>,
@@ -429,6 +433,7 @@ namespace isptr
 
 namespace std
 {
+    ISPTR_EXPORTED
     template<class Traits, class T>
     class atomic<isptr::intrusive_shared_ptr<T, Traits>>
     {

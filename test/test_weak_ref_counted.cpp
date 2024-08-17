@@ -1,7 +1,13 @@
-#include <intrusive_shared_ptr/ref_counted.h>
-#include <intrusive_shared_ptr/refcnt_ptr.h>
+#if ISPTR_USE_MODULES
+    import isptr;
+#else
+    #include <intrusive_shared_ptr/ref_counted.h>
+    #include <intrusive_shared_ptr/refcnt_ptr.h>
+#endif
 
-#include "catch.hpp"
+#include "doctest.h"
+#include <type_traits>
+#include <cstdint>
 
 using namespace isptr;
 
@@ -93,10 +99,11 @@ namespace
         { return new custom_weak_reference(count, const_cast<with_custom_weak_reference *>(this)); }
 }
 
+TEST_SUITE("traits") {
 
-TEST_CASE( "Weak ref counted type traits are correct", "[traits]") {
+TEST_CASE( "Weak ref counted type traits are correct" ) {
 
-    SECTION( "Base" ) {
+    SUBCASE( "Base" ) {
 
         CHECK( !std::is_default_constructible_v<weak_ref_counted<derived_counted>> );
         CHECK( !std::is_copy_constructible_v<weak_ref_counted<derived_counted>> );
@@ -107,7 +114,7 @@ TEST_CASE( "Weak ref counted type traits are correct", "[traits]") {
         CHECK( !std::is_destructible_v<weak_ref_counted<derived_counted>> );
     }
 
-    SECTION( "Derived" ) {
+    SUBCASE( "Derived" ) {
         CHECK( !std::is_default_constructible_v<derived_counted> );
         CHECK( !std::is_copy_constructible_v<derived_counted> );
         CHECK( !std::is_move_constructible_v<derived_counted> );
@@ -117,7 +124,7 @@ TEST_CASE( "Weak ref counted type traits are correct", "[traits]") {
         CHECK( !std::is_destructible_v<derived_counted> );
     }
 
-    SECTION( "Derived WeakRef" ) {
+    SUBCASE( "Derived WeakRef" ) {
 
         CHECK( !std::is_default_constructible_v<derived_counted::weak_value_type> );
         CHECK( !std::is_copy_constructible_v<derived_counted::weak_value_type> );
@@ -128,7 +135,7 @@ TEST_CASE( "Weak ref counted type traits are correct", "[traits]") {
         CHECK( !std::is_destructible_v<derived_counted::weak_value_type> );
     }
 
-    SECTION( "Wrapped" ) {
+    SUBCASE( "Wrapped" ) {
         CHECK( !std::is_default_constructible_v<wrapped_counted> );
         CHECK( !std::is_copy_constructible_v<wrapped_counted> );
         CHECK( !std::is_move_constructible_v<wrapped_counted> );
@@ -137,7 +144,7 @@ TEST_CASE( "Weak ref counted type traits are correct", "[traits]") {
         CHECK( !std::is_destructible_v<wrapped_counted> );
     }
 
-    SECTION( "Wrapped WeakRef" ) {
+    SUBCASE( "Wrapped WeakRef" ) {
         CHECK( !std::is_default_constructible_v<wrapped_counted::weak_value_type> );
         CHECK( !std::is_copy_constructible_v<wrapped_counted::weak_value_type> );
         CHECK( !std::is_move_constructible_v<wrapped_counted::weak_value_type> );
@@ -147,9 +154,13 @@ TEST_CASE( "Weak ref counted type traits are correct", "[traits]") {
     }
 }
 
-TEST_CASE( "Weak ref counted works", "[ref_counted]") {
+}
 
-    SECTION( "Derived" ) {
+TEST_SUITE("ref_counted") {
+
+TEST_CASE( "Weak ref counted works" ) {
+
+    SUBCASE( "Derived" ) {
         auto original = refcnt_attach(new derived_counted());
         auto weak1 = original->get_weak_ptr();
         CHECK(derived_count == 1);
@@ -167,7 +178,7 @@ TEST_CASE( "Weak ref counted works", "[ref_counted]") {
         CHECK(!strong1);
     }
     
-    SECTION( "Const Derived" ) {
+    SUBCASE( "Const Derived" ) {
         refcnt_ptr<const derived_counted> original = refcnt_attach(new derived_counted());
         auto weak1 = original->get_weak_ptr();
         CHECK(derived_count == 1);
@@ -185,7 +196,7 @@ TEST_CASE( "Weak ref counted works", "[ref_counted]") {
         CHECK(!strong1);
     }
 
-    SECTION( "Wrapped" ) {
+    SUBCASE( "Wrapped" ) {
         
         auto p = refcnt_attach(new wrapped_counted());
         CHECK(wrapped_count == 1);
@@ -194,7 +205,7 @@ TEST_CASE( "Weak ref counted works", "[ref_counted]") {
         CHECK( wrapped_count == 0 );
     }
     
-    SECTION( "Custom Weak Reference" ) {
+    SUBCASE( "Custom Weak Reference" ) {
         
         auto strong = refcnt_attach(new with_custom_weak_reference);
         CHECK(with_custom_weak_reference_count == 1);
@@ -209,4 +220,6 @@ TEST_CASE( "Weak ref counted works", "[ref_counted]") {
         strong1 = weak->lock();
         CHECK(!strong1);
     }
+}
+
 }

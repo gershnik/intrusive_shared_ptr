@@ -19,6 +19,7 @@ jobs:
         include:
         - os: macos-latest
         - os: windows-latest
+          module: true
         - os: ubuntu-latest
           compiler: gcc
           version: 11
@@ -28,6 +29,10 @@ jobs:
         - os: ubuntu-latest
           compiler: gcc
           version: 13
+        - os: ubuntu-24.04
+          compiler: gcc
+          version: 14
+          #module: true GCC 14 is a piece of shit
         - os: ubuntu-latest
           compiler: clang
           version: 13
@@ -40,9 +45,15 @@ jobs:
         - os: ubuntu-latest
           compiler: clang
           version: 16
+          module: true
         - os: ubuntu-latest
           compiler: clang
           version: 17
+          module: true
+        - os: ubuntu-latest
+          compiler: clang
+          version: 18
+          module: true
 
     steps:
     - name: Checkout
@@ -56,11 +67,12 @@ jobs:
     - name: System Setup
       shell: bash
       run: |
-        if [[ '${{ matrix.os }}' == 'ubuntu-latest' ]]; then
+        if [[ '${{ matrix.os }}' == ubuntu-* ]]; then
           if [[ '${{ matrix.compiler }}' == 'clang' ]]; then
             wget https://apt.llvm.org/llvm.sh
             chmod u+x llvm.sh
-            sudo ./llvm.sh ${{ matrix.version }}
+            sudo ./llvm.sh ${{ matrix.version }} 
+            sudo apt-get install -y clang-tools-${{ matrix.version }}
             echo "CC=clang-${{ matrix.version }}" >> $GITHUB_ENV
             echo "CXX=clang++-${{ matrix.version }}" >> $GITHUB_ENV
           fi
@@ -72,12 +84,23 @@ jobs:
             echo "CC=gcc-${{ matrix.version }}" >> $GITHUB_ENV
             echo "CXX=g++-${{ matrix.version }}" >> $GITHUB_ENV
           fi
+
+          mkdir bin
+          wget -qO- https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip | \
+                gunzip > bin/ninja
+          chmod a+x bin/ninja
+          echo PATH=`pwd`/bin:$PATH >> $GITHUB_ENV
+          echo "CMAKE_GENERATOR=-GNinja" >> $GITHUB_ENV
+        fi
+
+        if [[ '${{ matrix.module}}' == 'true' ]]; then
+            echo "CMAKE_ARGS=-DISPTR_PROVIDE_MODULE=ON" >> $GITHUB_ENV
         fi
 
     - name: Configure
       shell: bash
       run: |
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release 
+        cmake $CMAKE_GENERATOR -S . -B build $CMAKE_ARGS -DISPTR_ENABLE_PYTHON=ON -DCMAKE_BUILD_TYPE=Release 
 
     - name: Build and Test
       shell: bash

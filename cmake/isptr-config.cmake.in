@@ -13,3 +13,40 @@
 if(NOT TARGET isptr::isptr)
     include(${CMAKE_CURRENT_LIST_DIR}/isptr-exports.cmake)
 endif()
+
+if(ISPTR_PROVIDE_MODULE)
+    if(NOT TARGET isptrm::isptrm)
+        include(${CMAKE_CURRENT_LIST_DIR}/isptrm-exports.cmake)
+
+        if(ISPTR_ENABLE_PYTHON AND NOT Python3_Development_FOUND)
+            find_package (Python3 COMPONENTS Development REQUIRED)
+        endif()
+
+        add_library(isptrm_helper INTERFACE)
+        add_library(isptrm::helper ALIAS isptrm_helper)
+
+        if (ISPTR_ENABLE_PYTHON)
+
+            target_include_directories(isptrm_helper SYSTEM
+            INTERFACE
+                ${Python3_INCLUDE_DIRS}
+            )
+
+            target_link_libraries(isptrm_helper
+            INTERFACE
+                ${Python3_LIBRARIES}
+            )
+
+            target_compile_definitions(isptrm_helper 
+            INTERFACE
+                ISPTR_ENABLE_PYTHON=1
+            )
+        endif()
+
+        target_link_libraries(isptrm::isptrm
+        INTERFACE
+            isptrm::helper
+        )
+    endif()
+endif()
+
