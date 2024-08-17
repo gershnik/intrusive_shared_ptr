@@ -24,7 +24,11 @@ jobs:
 
       - name: Zip Headers
         shell: bash
-        run: tar -czf intrusive_shared_ptr-${{ env.RELEASE_NAME }}.tar.gz --transform 's/inc/intrusive_shared_ptr\/inc/' inc
+        run: |
+          tar -czf intrusive_shared_ptr-${{ env.RELEASE_NAME }}.tar.gz \
+                --transform 's/inc/intrusive_shared_ptr\/inc/' \
+                --transform 's/modules/intrusive_shared_ptr\/modules/' \
+                inc modules
 
       - name: Make release
         uses: softprops/action-gh-release@v2
