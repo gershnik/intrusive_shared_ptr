@@ -22,30 +22,6 @@ lib_include_re = re.compile(r'\s*#\s*include\s+<intrusive_shared_ptr/([^>]+)>\s*
 user_include_re = re.compile(r'\s*#\s*include\s+"([^"]+)"\s*')
 
 
-SKELETON = '''
-/*
- Copyright 2004 Eugene Gershnik
-
- Use of this source code is governed by a BSD-style
- license that can be found in the LICENSE file or at
- https://github.com/gershnik/intrusive_shared_ptr/blob/master/LICENSE.txt
-*/
-module;
-
-##SYS_INCLUDES##
-
-export module isptr;
-
-#define ISPTR_EXPORTED export 
-
-#include "intrusive_shared_ptr.h"
-#include "ref_counted.h"
-#include "apple_cf_ptr.h"
-#include "com_ptr.h"
-#include "python_ptr.h"
-#include "refcnt_ptr.h"
-'''.lstrip()
-
 SPECIAL_HEADERS = {
     'CoreFoundation/CoreFoundation.h': 
 '''
