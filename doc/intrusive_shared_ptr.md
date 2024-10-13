@@ -92,7 +92,7 @@ using traits_type = Traits;
 
 
 
-## Class std::atomic<isptr::intrusive_shared_ptr>
+## Class std::atomic&lt;isptr::intrusive_shared_ptr&gt;
 
 Provides the standard set of `std::atomic` functionality:
 
