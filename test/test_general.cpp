@@ -4,7 +4,7 @@
     #include <intrusive_shared_ptr/intrusive_shared_ptr.h>
 #endif
 
-#include "doctest.h"
+#include <doctest/doctest.h>
 #include "mocks.h"
 
 #include <sstream>

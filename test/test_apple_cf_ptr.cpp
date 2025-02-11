@@ -4,7 +4,7 @@
     #include <intrusive_shared_ptr/apple_cf_ptr.h>
 #endif
 
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #if (defined(__APPLE__) && defined(__MACH__))
 

@@ -10,6 +10,7 @@ include(FetchContent)
 FetchContent_Declare(doctest
     URL  https://raw.githubusercontent.com/doctest/doctest/v2.4.11/doctest/doctest.h
     DOWNLOAD_NO_EXTRACT TRUE
+    SOURCE_DIR downloaded/doctest
 )
 
 FetchContent_MakeAvailable(doctest)
@@ -59,7 +60,7 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
         endif()
 
         target_include_directories(${TEST_TARGET_NAME} PRIVATE
-            ${doctest_SOURCE_DIR}
+            ${CMAKE_CURRENT_BINARY_DIR}/downloaded
         )
 
         if (ISPTR_ENABLE_PYTHON)

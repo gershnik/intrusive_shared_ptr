@@ -5,7 +5,7 @@
     #include <intrusive_shared_ptr/refcnt_ptr.h>
 #endif
 
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #include <vector>
 #include <stdexcept>

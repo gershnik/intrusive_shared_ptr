@@ -8,7 +8,7 @@
     #include <intrusive_shared_ptr/com_ptr.h>
 #endif
 
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 #ifdef _WIN32
 

@@ -11,7 +11,7 @@
     #include <intrusive_shared_ptr/python_ptr.h>
 #endif
 
-#include "doctest.h"
+#include <doctest/doctest.h>
 
 using namespace isptr;
 
