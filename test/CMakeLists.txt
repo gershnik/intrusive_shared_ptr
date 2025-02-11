@@ -42,7 +42,7 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
 
         set(TEST_TARGET_NAME test-${TEST_SUFFIX}-${TEST_VARIANT})
 
-        add_executable(${TEST_TARGET_NAME})
+        add_executable(${TEST_TARGET_NAME} EXCLUDE_FROM_ALL)
 
         set_target_properties(${TEST_TARGET_NAME} PROPERTIES
             CXX_STANDARD ${CXX_STANDARD_${TEST_SUFFIX}}
@@ -117,6 +117,6 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
 
 endforeach()
 
-add_custom_target(run-test 
+add_custom_target(run-test
     ${TEST_COMMAND}
 )
