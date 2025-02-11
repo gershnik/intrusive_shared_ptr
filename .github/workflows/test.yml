@@ -33,16 +33,16 @@ jobs:
           compiler: gcc
           version: 14
           #module: true GCC 14 is a piece of shit
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           compiler: clang
           version: 13
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           compiler: clang
           version: 14
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           compiler: clang
           version: 15
-        - os: ubuntu-latest
+        - os: ubuntu-22.04
           compiler: clang
           version: 16
           module: true
