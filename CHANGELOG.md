@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [1.6] - 2025-02-11
+
 ### Changed
 - Test targets are now excluded from default build
 - Doctest is now included via `<doctest/doctest.h>` to make it possible to build 
@@ -56,3 +58,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [1.3]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.3
 [1.4]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.4
 [1.5]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.5
+[1.6]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.6
