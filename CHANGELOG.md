@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Changed
+- Test targets are now excluded from default build
+- Doctest is now included via `<doctest/doctest.h>` to make it possible to build 
+  tests against an external Doctest not brought via FetchContent. 
+
+### Fixed
+- `common.h` header is now correctly installed by CMake install
+
 ## [1.5] - 2024-08-16
 
 ### Added
