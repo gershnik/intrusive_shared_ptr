@@ -34,6 +34,7 @@ INTERFACE
 
 set(PUBLIC_HEADERS 
     ${SRCDIR}/inc/intrusive_shared_ptr/intrusive_shared_ptr.h
+    ${SRCDIR}/inc/intrusive_shared_ptr/common.h
     ${SRCDIR}/inc/intrusive_shared_ptr/apple_cf_ptr.h
     ${SRCDIR}/inc/intrusive_shared_ptr/com_ptr.h
     ${SRCDIR}/inc/intrusive_shared_ptr/python_ptr.h
