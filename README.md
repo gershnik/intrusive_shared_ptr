@@ -27,6 +27,8 @@ Documentation and formal tests are work in progress.
     - [Support for weak pointers](#support-for-weak-pointers)
 - [Integration](#integration)
     - [CMake via FetchContent](#cmake-via-fetchcontent)
+    - [Vcpkg](#vcpkg)
+    - [Platform package managers](#platform-package-managers)
     - [Building and installing on your system](#building-and-installing-on-your-system)
         - [Basic use](#basic-use)
         - [CMake package](#cmake-package)
@@ -151,6 +153,30 @@ PRIVATE
 )
 ```
 > ℹ&#xFE0F; _[What is FetchContent?](https://cmake.org/cmake/help/latest/module/FetchContent.html)_
+
+### Vcpkg
+
+In classic mode, run the following vcpkg command:
+```bash
+vcpkg install intrusive-shared-ptr
+```
+
+In manifest mode, run the following vcpkg command in your project directory:
+```bash
+vcpkg add port intrusive-shared-ptr
+```
+
+### Platform package managers
+
+On Debian based systems `intrusive-shared-ptr` might be available via APT.
+
+You can consult https://pkgs.org/search/?q=libisptr-dev for up-to-date availability information.
+
+If available, it can be installed via
+
+```bash
+apt install libisptr-dev
+```
 
 ### Building and installing on your system
 
