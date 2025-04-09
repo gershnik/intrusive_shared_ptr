@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Added
+- Full support for `std::out_ptr` and `std::inout_ptr` when provided by the standard library.
+  Older `get_output_param()` continues to work and its semantics have been aligned with `std::out_ptr`
+  behavior.
+
 ## [1.6] - 2025-02-11
 
 ### Changed
