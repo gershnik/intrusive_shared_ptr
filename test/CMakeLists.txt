@@ -78,7 +78,7 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
 
         target_link_libraries(${TEST_TARGET_NAME} PRIVATE
             "$<$<PLATFORM_ID:Darwin>:-framework CoreFoundation>"
-            $<IF:$<STREQUAL:${TEST_VARIANT},module>,isptrm::isptrm,isptr::isptr>
+            $<IF:$<STREQUAL:${TEST_VARIANT},module>,isptrm-${TEST_SUFFIX}::isptrm-${TEST_SUFFIX},isptr::isptr>
         )
 
         target_compile_options(${TEST_TARGET_NAME} PRIVATE
