@@ -19,7 +19,7 @@ Documentation and formal tests are work in progress.
 - [Why bother?](#why-bother)
     - [Named conversions from raw pointers](#named-conversions-from-raw-pointers)
     - [No ADL](#no-adl)
-    - [Decent support for output parameters](#decent-support-for-output-parameters)
+    - [Support for output parameters](#support-for-output-parameters)
     - [Support for operator->*](#support-for-operator-)
     - [Atomic access](#atomic-access)
     - [Trivial ABI](#trivial-abi)
@@ -78,7 +78,7 @@ A better way to define how reference counting is done is to pass a traits class 
 
 This library uses traits.
 
-### Support for output parameters both before C++23 and after
+### Support for output parameters
 
 Often times you need to pass smart pointer as an output parameter to a C function that takes `T **`
 Many other smart pointers either 
@@ -87,11 +87,11 @@ Many other smart pointers either
   an address of foo, not something else)
 The right solution is to have a proxy class convertible to `T **`.
 
-Since C++23 the standard library has `std::out_ptr` and `std::inout_ptr` to deal with this issue. This library
-fully supports those when compiled with these classes available.
+Since C++23 the standard library provides `std::out_ptr` and `std::inout_ptr` to deal with this issue. This library
+fully supports those when they are available.
 
-If these classes are not available, this library also provides an inner proxy class (that behaves similarly to `std::out_ptr_t`) 
-and a `get_output_param()` method.
+When standard library support is not available, this library also exposes `get_output_param()` method that 
+returns an inner proxy class (which behaves similarly to `std::out_ptr_t`) 
 
 ### Support for `operator->*`
 
