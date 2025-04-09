@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [1.7] - 2025-04-09
+
 ### Added
 - Full support for `std::out_ptr` and `std::inout_ptr` when provided by the standard library.
   Older `get_output_param()` continues to work and its semantics have been aligned with `std::out_ptr`
@@ -70,3 +72,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [1.4]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.4
 [1.5]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.5
 [1.6]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.6
+[1.7]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.7
