@@ -150,8 +150,12 @@ target_link_libraries(mytarget
 PRIVATE
   #To use header files:
   isptr::isptr
+
   #To use C++ module use the following instead (note the *m*):
-  #isptrm::isptrm
+  #For C++20 
+  #isptrm-20::isptrm-20
+  #For C++23
+  #isptrm-23::isptrm-23
 )
 ```
 > ℹ&#xFE0F; _[What is FetchContent?](https://cmake.org/cmake/help/latest/module/FetchContent.html)_
