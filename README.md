@@ -78,7 +78,7 @@ A better way to define how reference counting is done is to pass a traits class 
 
 This library uses traits.
 
-### Decent support for output parameters
+### Support for output parameters both before C++23 and after
 
 Often times you need to pass smart pointer as an output parameter to a C function that takes `T **`
 Many other smart pointers either 
@@ -86,10 +86,12 @@ Many other smart pointers either
 - overload `operator&` which is a horrendously bad idea (it breaks lots of generic code which assumes that `&foo` gives
   an address of foo, not something else)
 The right solution is to have a proxy class convertible to `T **`.
-The standard library proposal addresses this problem via generic `out_ptr` that can work with any 
-smart pointer. If done right, this might be the best solution but the relevant code is not yet widely available anywhere.
 
-This library currently uses an inner proxy class and a `get_output_param()` method. 
+Since C++23 the standard library has `std::out_ptr` and `std::inout_ptr` to deal with this issue. This library
+fully supports those when compiled with these classes available.
+
+If these classes are not available, this library also provides an inner proxy class (that behaves similarly to `std::out_ptr_t`) 
+and a `get_output_param()` method.
 
 ### Support for `operator->*`
 
@@ -148,8 +150,12 @@ target_link_libraries(mytarget
 PRIVATE
   #To use header files:
   isptr::isptr
+
   #To use C++ module use the following instead (note the *m*):
-  #isptrm::isptrm
+  #For C++20 
+  #isptrm-20::isptrm-20
+  #For C++23
+  #isptrm-23::isptrm-23
 )
 ```
 > ℹ&#xFE0F; _[What is FetchContent?](https://cmake.org/cmake/help/latest/module/FetchContent.html)_
@@ -469,7 +475,10 @@ cf_ptr<CFArrayRef> array = cf_retain(raw);
 using namespace isptr;
 
 com_shared_ptr<IStream> pStream;
+//Before C++23
 CreateStreamOnHGlobal(nullptr, true, pStream.get_output_param());
+//With C++23 and later
+CreateStreamOnHGlobal(nullptr, true, std::out_ptr(pStream));
 pStream->Write(....);
 
 ```

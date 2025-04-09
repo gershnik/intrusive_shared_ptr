@@ -81,33 +81,43 @@ if(ISPTR_PROVIDE_MODULE)
 
     endif()
 
-    add_library(${LIBNAME}m OBJECT)
-
-    target_compile_features(${LIBNAME}m
-    PUBLIC
-        cxx_std_20
+    set(MODULE_STANDARDS 
+        20
+        23
     )
+    foreach(MODULE_STANDARD ${MODULE_STANDARDS})
 
-    set_target_properties(${LIBNAME}m PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS OFF
-        CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN ON 
-    )
+        set(MODULE_LIB_NAME ${LIBNAME}m-${MODULE_STANDARD})
 
-    target_link_libraries(${LIBNAME}m
-    PRIVATE
-        $<BUILD_INTERFACE:${LIBNAME}m::helper>
-    )
+        add_library(${MODULE_LIB_NAME} OBJECT)
 
-    target_sources(${LIBNAME}m
-    PUBLIC 
-        FILE_SET CXX_MODULES BASE_DIRS ${SRCDIR}/modules FILES
-            ${SRCDIR}/modules/isptr.cppm
-    )
+        target_compile_features(${MODULE_LIB_NAME}
+        PUBLIC
+            cxx_std_20
+        )
 
-    add_library(${LIBNAME}m::${LIBNAME}m ALIAS ${LIBNAME}m)
+        set_target_properties(${MODULE_LIB_NAME} PROPERTIES
+            CXX_STANDARD ${MODULE_STANDARD}
+            CXX_STANDARD_REQUIRED YES
+            CXX_EXTENSIONS OFF
+            CXX_VISIBILITY_PRESET hidden
+            VISIBILITY_INLINES_HIDDEN ON 
+        )
+
+        target_link_libraries(${MODULE_LIB_NAME}
+        PRIVATE
+            $<BUILD_INTERFACE:${LIBNAME}m::helper>
+        )
+
+        target_sources(${MODULE_LIB_NAME}
+        PUBLIC 
+            FILE_SET CXX_MODULES BASE_DIRS ${SRCDIR}/modules FILES
+                ${SRCDIR}/modules/isptr.cppm
+        )
+
+        add_library(${MODULE_LIB_NAME}::${MODULE_LIB_NAME} ALIAS ${MODULE_LIB_NAME})
+
+    endforeach()
 
 endif()
 

@@ -23,16 +23,20 @@ endif()
 set (TEST_SUFFIXES
     17
     20
+    23
 )
 
 set(CXX_STANDARD_17 17)
 set(CXX_STANDARD_20 20)
+set(CXX_STANDARD_23 23)
 
 set(TEST_VARIANTS_17 "headers")
 if (${ISPTR_PROVIDE_MODULE})
     set(TEST_VARIANTS_20 "headers;module")
+    set(TEST_VARIANTS_23 "headers;module")
 else()
     set(TEST_VARIANTS_20 "headers")
+    set(TEST_VARIANTS_23 "headers")
 endif()
 
 set(TEST_COMMAND "")
@@ -74,7 +78,7 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
 
         target_link_libraries(${TEST_TARGET_NAME} PRIVATE
             "$<$<PLATFORM_ID:Darwin>:-framework CoreFoundation>"
-            $<IF:$<STREQUAL:${TEST_VARIANT},module>,isptrm::isptrm,isptr::isptr>
+            $<IF:$<STREQUAL:${TEST_VARIANT},module>,isptrm-${TEST_SUFFIX}::isptrm-${TEST_SUFFIX},isptr::isptr>
         )
 
         target_compile_options(${TEST_TARGET_NAME} PRIVATE
@@ -98,6 +102,7 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
             test_python_ptr.cpp
             test_general.cpp
             test_main.cpp
+            test_out_ptr.cpp
             test_ref_counted.cpp
             test_ref_counted_st.cpp
             test_weak_ref_counted.cpp

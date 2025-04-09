@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Added
+- Full support for `std::out_ptr` and `std::inout_ptr` when provided by the standard library.
+  Older `get_output_param()` continues to work and its semantics have been aligned with `std::out_ptr`
+  behavior.
+
+### Changed
+- C++ module CMake targets now include standard version suffixes. Instead of `isptrm::isptrm` you need
+  to use `isptrm-20::isptrm-20` or `isptrm-23::isptrm-23` to match the version of C++ your client code 
+  is compiled under. (Apparently you cannot use a module built with a different C++ version from the
+  client code. Sigh.)
+
 ## [1.6] - 2025-02-11
 
 ### Changed

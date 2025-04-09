@@ -68,9 +68,10 @@ using traits_type = Traits;
 - `template<class M> M & operator->*(M T::*memptr) const noexcept` Returns the result of `'stored pointer'->*memptr`
    This allows access via pointee's pointer to members
 - `explicit operator bool() const noexcept` true if the pointer is non null
-- `output_param get_output_param() noexcept` returns a temporary object that exposes `operator T**() && noexcept`. This can
+- Before C++23: `output_param get_output_param() noexcept` returns a temporary object that exposes `operator T**() && noexcept`. This can
    be passed as an output parameter to C functions that return a reference counted pointer. The destructor of the temporary
    will fill this pointer with the returned result.
+   In C++23 and above use `std::out_ptr` or `std::inout_ptr`instead.
 - `T * release() noexcept` Releases the stored pointer. The object is set to null and calling code assumes ownership of the
    pointer. No adjustment is made to the reference count.
 - `void reset() noexcept` Clears the stored pointer. The reference count is decremented.

@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <ostream>
 #include <atomic>
+#include <utility>
 
 
 namespace isptr
@@ -48,6 +49,12 @@ namespace isptr
         static_assert(are_intrusive_shared_traits<Traits, T>, "Invalid Traits for type T");
         
         friend std::atomic<intrusive_shared_ptr<T, Traits>>;
+
+    #if ISPTR_SUPPORT_OUT_PTR
+        friend std::out_ptr_t<intrusive_shared_ptr<T, Traits>, T *>;
+        friend std::inout_ptr_t<intrusive_shared_ptr<T, Traits>, T *>;
+    #endif
+
     public:
         using pointer = T *;
         using element_type = T;
@@ -58,17 +65,17 @@ namespace isptr
             friend class intrusive_shared_ptr<T, Traits>;
         public:
             ISPTR_CONSTEXPR_SINCE_CPP20 ~output_param() noexcept
-            {
-                if (m_p != m_owner->get())
-                    *m_owner = intrusive_shared_ptr::noref(m_p);
+            { 
+                m_owner->reset();
+                m_owner->m_p = m_p;
             }
             
             constexpr operator T**() && noexcept
                 { return &m_p; }
+
         private:
-            constexpr output_param(intrusive_shared_ptr<T, Traits> & owner, T * p) noexcept :
-                m_owner(&owner),
-                m_p(p)
+            constexpr output_param(intrusive_shared_ptr<T, Traits> & owner) noexcept :
+                m_owner(&owner)
             {}
             constexpr output_param(output_param && src) noexcept = default;
             
@@ -77,7 +84,7 @@ namespace isptr
             void operator=(output_param &&) = delete;
         private:
             intrusive_shared_ptr<T, Traits> * m_owner;
-            T * m_p;
+            T * m_p = nullptr;
         };
     public:
         static constexpr intrusive_shared_ptr noref(T * p) noexcept
@@ -178,7 +185,7 @@ namespace isptr
             { return this->m_p; }
 
         constexpr output_param get_output_param() noexcept
-            { return output_param(*this, this->m_p); }
+            { return output_param(*this); }
         
         constexpr T * release() noexcept
         { 
@@ -540,6 +547,68 @@ namespace std
     private:
         std::atomic<T *> m_p = nullptr;
     };
+
+#if ISPTR_SUPPORT_OUT_PTR
+
+    ISPTR_EXPORTED
+    template<class T, class Traits>
+    class out_ptr_t<isptr::intrusive_shared_ptr<T, Traits>, T *>
+    {
+    public:
+        constexpr out_ptr_t(isptr::intrusive_shared_ptr<T, Traits> & owner) noexcept :
+            m_owner(&owner)
+        {}
+        constexpr out_ptr_t(out_ptr_t && src) noexcept = default;
+        out_ptr_t(const out_ptr_t &) = delete;
+
+        void operator=(const out_ptr_t &) = delete;
+        void operator=(out_ptr_t &&) = delete;
+
+        ISPTR_CONSTEXPR_SINCE_CPP20 ~out_ptr_t() noexcept
+        { 
+            m_owner->reset();
+            m_owner->m_p = m_p;
+        }
+        
+        constexpr operator T**() const noexcept
+            { return const_cast<T **>(&m_p); }
+
+        constexpr operator void**() const noexcept requires(!std::is_same_v<T *, void *>)
+            { return reinterpret_cast<void**>(const_cast<T **>(&m_p)); }
+    private:
+        isptr::intrusive_shared_ptr<T, Traits> * m_owner;
+        T * m_p = nullptr;
+    };
+
+    ISPTR_EXPORTED
+    template<class T, class Traits>
+    class inout_ptr_t<isptr::intrusive_shared_ptr<T, Traits>, T *>
+    {
+    public:
+        constexpr inout_ptr_t(isptr::intrusive_shared_ptr<T, Traits> & owner) noexcept :
+            m_owner(&owner),
+            m_p(std::exchange(owner.m_p, nullptr))
+        {}
+        constexpr inout_ptr_t(inout_ptr_t && src) noexcept = default;
+        inout_ptr_t(const inout_ptr_t &) = delete;
+
+        void operator=(const inout_ptr_t &) = delete;
+        void operator=(inout_ptr_t &&) = delete;
+
+        ISPTR_CONSTEXPR_SINCE_CPP20 ~inout_ptr_t() noexcept
+            { m_owner->m_p = m_p; }
+        
+        constexpr operator T**() const noexcept
+            { return const_cast<T **>(&m_p); }
+
+        constexpr operator void**() const noexcept requires(!std::is_same_v<T *, void *>)
+            { return reinterpret_cast<void**>(const_cast<T **>(&m_p)); }
+    private:
+        isptr::intrusive_shared_ptr<T, Traits> * m_owner;
+        T * m_p;
+    };
+
+#endif
 }
 
 #undef ISPTR_TRIVIAL_ABI
