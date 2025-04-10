@@ -204,158 +204,106 @@ namespace isptr
         }
 
         friend constexpr void swap(intrusive_shared_ptr<T, Traits> & lhs, intrusive_shared_ptr<T, Traits> & rhs) noexcept
-        {
-            lhs.swap(rhs);
-        }
+            { lhs.swap(rhs); }
 
         template<class Y, class YTraits>
         friend constexpr bool operator==(const intrusive_shared_ptr<T, Traits>& lhs, const intrusive_shared_ptr<Y, YTraits>& rhs) noexcept
-        {
-            return lhs.m_p == rhs.get();
-        }
+            { return lhs.m_p == rhs.get(); }
 
         template<class Y>
         friend constexpr bool operator==(const intrusive_shared_ptr<T, Traits>& lhs, const Y* rhs) noexcept
-        {
-            return lhs.m_p == rhs;
-        }
+            { return lhs.m_p == rhs; }
 
         template<class Y>
         friend constexpr bool operator==(const Y* lhs, const intrusive_shared_ptr<T, Traits>& rhs) noexcept
-        {
-            return lhs == rhs.m_p;
-        }
+            { return lhs == rhs.m_p; }
 
         friend constexpr bool operator==(const intrusive_shared_ptr<T, Traits>& lhs, std::nullptr_t) noexcept
-        {
-            return lhs.m_p == nullptr;
-        }
+            { return lhs.m_p == nullptr; }
 
         friend constexpr bool operator==(std::nullptr_t, const intrusive_shared_ptr<T, Traits>& rhs) noexcept
-        {
-            return nullptr == rhs.m_p;
-        }
+            { return nullptr == rhs.m_p; }
 
         template<class Y, class YTraits>
         friend constexpr bool operator!=(const intrusive_shared_ptr<T, Traits>& lhs, const intrusive_shared_ptr<Y, YTraits>& rhs) noexcept
-        {
-            return !(lhs == rhs);
-        }
+            { return !(lhs == rhs); }
 
         template<class Y>
         friend constexpr bool operator!=(const intrusive_shared_ptr<T, Traits>& lhs, const Y* rhs) noexcept
-        {
-            return !(lhs == rhs);
-        }
+            { return !(lhs == rhs); }
 
         template<class Y>
         friend constexpr bool operator!=(const Y* lhs, const intrusive_shared_ptr<T, Traits>& rhs) noexcept
-        {
-            return !(lhs == rhs);
-        }
+            { return !(lhs == rhs); }
 
         friend constexpr bool operator!=(const intrusive_shared_ptr<T, Traits>& lhs, std::nullptr_t) noexcept
-        {
-            return !(lhs == nullptr);
-        }
+            { return !(lhs == nullptr); }
 
         friend constexpr bool operator!=(std::nullptr_t, const intrusive_shared_ptr<T, Traits>& rhs) noexcept
-        {
-            return !(nullptr == rhs);
-        }
+            { return !(nullptr == rhs); }
 
     #if ISPTR_USE_SPACESHIP_OPERATOR
 
         template<class Y, class YTraits>
         friend constexpr auto operator<=>(const intrusive_shared_ptr<T, Traits> & lhs, const intrusive_shared_ptr<Y, YTraits> & rhs) noexcept
-        {
-            return lhs.m_p <=> rhs.get();
-        }
+            { return lhs.m_p <=> rhs.get(); }
 
         template<class Y>
         friend constexpr auto operator<=>(const intrusive_shared_ptr<T, Traits> & lhs, const Y * rhs) noexcept
-        {
-            return lhs.m_p <=> rhs;
-        }
+            { return lhs.m_p <=> rhs; }
 
         template<class Y>
         friend constexpr auto operator<=>(const Y * lhs, const intrusive_shared_ptr<T, Traits> & rhs) noexcept
-        {
-            return lhs <=> rhs.m_p;
-        }
+            { return lhs <=> rhs.m_p; }
 
     #else
         template<class Y, class YTraits>
         friend constexpr bool operator<(const intrusive_shared_ptr<T, Traits> & lhs, const intrusive_shared_ptr<Y, YTraits> & rhs) noexcept
-        {
-            return lhs.m_p < rhs.get();
-        }
+            { return lhs.m_p < rhs.get(); }
 
         template<class Y>
         friend constexpr bool operator<(const intrusive_shared_ptr<T, Traits> & lhs, const Y * rhs) noexcept
-        {
-            return lhs.m_p < rhs;
-        }
+            { return lhs.m_p < rhs; }
 
         template<class Y>
         friend constexpr bool operator<(const Y * lhs, const intrusive_shared_ptr<T, Traits> & rhs) noexcept
-        {
-            return lhs < rhs.m_p;
-        }
+            { return lhs < rhs.m_p; }
 
         template<class Y, class YTraits>
         friend constexpr bool operator<=(const intrusive_shared_ptr<T, Traits> & lhs, const intrusive_shared_ptr<Y, YTraits> & rhs) noexcept
-        {
-            return lhs.m_p <= rhs.get();
-        }
+            { return lhs.m_p <= rhs.get(); }
 
         template<class Y>
         friend constexpr bool operator<=(const intrusive_shared_ptr<T, Traits> & lhs, const Y * rhs) noexcept
-        {
-            return lhs.m_p <= rhs;
-        }
+            { return lhs.m_p <= rhs; }
 
         template<class Y>
         friend constexpr bool operator<=(const Y * lhs, const intrusive_shared_ptr<T, Traits> & rhs) noexcept
-        {
-            return lhs <= rhs.m_p;
-        }
+            { return lhs <= rhs.m_p; }
 
         template<class Y, class YTraits>
         friend constexpr bool operator>(const intrusive_shared_ptr<T, Traits> & lhs, const intrusive_shared_ptr<Y, YTraits> & rhs) noexcept
-        {
-            return !(lhs <= rhs);
-        }
+            { return !(lhs <= rhs); }
 
         template<class Y>
         friend constexpr bool operator>(const intrusive_shared_ptr<T, Traits> & lhs, const Y * rhs) noexcept
-        {
-            return !(lhs <= rhs);
-        }
+            { return !(lhs <= rhs); }
 
         template<class Y>
         friend constexpr bool operator>(const Y * lhs, const intrusive_shared_ptr<T, Traits> & rhs) noexcept
-        {
-            return !(lhs <= rhs);
-        }
+            { return !(lhs <= rhs); }
 
         template<class Y, class YTraits>
         friend constexpr bool operator>=(const intrusive_shared_ptr<T, Traits> & lhs, const intrusive_shared_ptr<Y, YTraits> & rhs) noexcept
-        {
-            return !(lhs < rhs);
-        }
+            { return !(lhs < rhs); }
 
         template<class Y>
         friend constexpr bool operator>=(const intrusive_shared_ptr<T, Traits> & lhs, const Y * rhs) noexcept
-        {
-            return !(lhs < rhs);
-        }
+            { return !(lhs < rhs); }
 
         template<class Y>
         friend constexpr bool operator>=(const Y * lhs, const intrusive_shared_ptr<T, Traits> & rhs) noexcept
-        {
-            return !(lhs < rhs);
-        }
+            { return !(lhs < rhs); }
 
         
 
@@ -363,24 +311,17 @@ namespace isptr
 
         template<class Char>
         friend std::basic_ostream<Char> & operator<<(std::basic_ostream<Char> & str, const intrusive_shared_ptr<T, Traits> & ptr)
-        {
-            return str << ptr.m_p;
-        }
+            { return str << ptr.m_p; }
         
     private:
         constexpr intrusive_shared_ptr(T * ptr) noexcept :
             m_p(ptr)
-        {
-        }
+        {}
 
         static constexpr void do_add_ref(T * p) noexcept
-        {
-            if (p) Traits::add_ref(p);
-        }
+            { if (p) Traits::add_ref(p); }
         static constexpr void do_sub_ref(T * p) noexcept
-        {
-            if (p) Traits::sub_ref(p);
-        }
+            { if (p) Traits::sub_ref(p); }
     private:
         T * m_p;
     };
@@ -404,9 +345,7 @@ namespace isptr
     inline constexpr
     std::enable_if_t<is_intrusive_shared_ptr_v<Dest>,
     Dest> intrusive_const_cast(intrusive_shared_ptr<Src, Traits> p) noexcept
-    {
-        return Dest::noref(const_cast<typename Dest::pointer>(p.release()));
-    }
+        { return Dest::noref(const_cast<typename Dest::pointer>(p.release())); }
 
     ISPTR_EXPORTED
     template<class Dest, class Src, class Traits>
@@ -428,9 +367,7 @@ namespace isptr
     inline constexpr
     std::enable_if_t<is_intrusive_shared_ptr_v<Dest>,
     Dest> intrusive_static_cast(intrusive_shared_ptr<Src, Traits> p) noexcept
-    {
-        return Dest::noref(static_cast<typename Dest::pointer>(p.release()));
-    }
+        { return Dest::noref(static_cast<typename Dest::pointer>(p.release())); }
 }
 
 namespace std
@@ -446,27 +383,19 @@ namespace std
 
         constexpr atomic() noexcept = default;
         atomic(value_type desired) noexcept : m_p(desired.m_p)
-        {
-            desired.m_p = nullptr;
-        }
+            { desired.m_p = nullptr; }
         
         atomic(const atomic&) = delete;
         void operator=(const atomic&) = delete;
         
         ~atomic() noexcept
-        {
-            value_type::do_sub_ref(this->m_p.load(memory_order_acquire));
-        }
+            { value_type::do_sub_ref(this->m_p.load(memory_order_acquire)); }
 
         void operator=(value_type desired) noexcept
-        {
-            this->store(std::move(desired));
-        }
+            { this->store(std::move(desired)); }
 
         operator value_type() const noexcept
-        {
-            return this->load();
-        }
+            { return this->load(); }
 
         value_type load(memory_order order = memory_order_seq_cst) const noexcept
         {
@@ -475,9 +404,7 @@ namespace std
         }
 
         void store(value_type desired, memory_order order = memory_order_seq_cst) noexcept
-        {
-            exchange(std::move(desired), order);
-        }
+            { exchange(std::move(desired), order); }
         
         value_type exchange(value_type desired, memory_order order = memory_order_seq_cst) noexcept
         {
