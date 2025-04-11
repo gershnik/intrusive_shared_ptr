@@ -549,7 +549,6 @@ namespace std
 
 #if ISPTR_SUPPORT_STD_FORMAT
 
-    ISPTR_EXPORTED
     template<class T, class Traits, class CharT>
     struct formatter<::isptr::intrusive_shared_ptr<T, Traits>, CharT> : public formatter<void *, CharT>
     {
