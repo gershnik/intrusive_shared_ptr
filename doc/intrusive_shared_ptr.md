@@ -91,7 +91,11 @@ using traits_type = Traits;
 - `Dest intrusive_static_cast<Dest>(intrusive_shared_ptr src) noexcept`. Performs an equivalent of `static_cast` on passed argument. The destination type needs to be a valid `intrusive_shared_ptr` type whose underlying type is convertible from source's via `static_cast`.
 - `Dest intrusive_dynamic_cast<Dest>(intrusive_shared_ptr src) noexcept`. Performs an equivalent of `dynamic_cast` on passed argument. The destination type needs to be a valid `intrusive_shared_ptr` type whose underlying type is convertible from source's via `dynamic_cast`. Returns a null result if underlying `dynamic_cast` fails.
 
+#### Specializations
 
+- `std::out_ptr_t<intrusive_shared_ptr>` and `std::inout_ptr_t<intrusive_shared_ptr>`. Provide support for using
+  `std::out_ptr` and `std::inout_ptr` with `intrusive_shared_ptr`
+- `std::formatter<intrusive_shared_ptr>`. Provides support for using `std::format` with `intrusive_shared_ptr` instances
 
 ## Class std::atomic&lt;isptr::intrusive_shared_ptr&gt;
 

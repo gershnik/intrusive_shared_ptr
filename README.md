@@ -146,7 +146,6 @@ FetchContent_MakeAvailable(isptr)
 #To use header files:
 target_link_libraries(mytarget
 PRIVATE
-  #To use header files:
   isptr::isptr
 )
 

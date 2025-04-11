@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Added
+- Support for `std::format` (if available). Instances of `intrusive_shared_ptr` can be passed to `std::format`
+  and will be printed like a `void *`. 
+- `get_inout_param()` method. This provides the same functionality as `std::inout_ptr` but is available for pre-C++23 compilation.
+
+### Changed
+- Performance improvements for `std::out_ptr` etc.
+- C++ module is no longer using CMake library mechanism. See [README](README.md) for details on how to use module.
+
+### Fixed
+- Some internal helpers moved into `internal` namespace where they always should have been
+- Internal macros are now properly cleared at the end of the header files 
+
 ## [1.7] - 2025-04-09
 
 ### Added
