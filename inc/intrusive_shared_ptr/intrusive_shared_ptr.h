@@ -14,7 +14,6 @@
 #include <type_traits>
 #include <ostream>
 #include <atomic>
-#include <utility>
 
 
 namespace isptr

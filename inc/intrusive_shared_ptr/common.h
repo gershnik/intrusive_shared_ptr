@@ -9,6 +9,10 @@
 #ifndef HEADER_ISPTR_COMMON_H_INCLUDED
 #define HEADER_ISPTR_COMMON_H_INCLUDED
 
+#if __has_include(<version>)
+    #include <version>
+#endif
+
 
 #if __cpp_constexpr >= 201907L
 

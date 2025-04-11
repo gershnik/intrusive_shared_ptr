@@ -28,7 +28,7 @@ module;
 #include <memory>
 #include <ostream>
 #include <type_traits>
-#include <utility>
+
 
 export module isptr;
 
@@ -41,6 +41,9 @@ export module isptr;
 
 #ifndef HEADER_ISPTR_COMMON_H_INCLUDED
 #define HEADER_ISPTR_COMMON_H_INCLUDED
+
+#if __has_include(<version>)
+#endif
 
 
 #if __cpp_constexpr >= 201907L

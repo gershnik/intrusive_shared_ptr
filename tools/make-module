@@ -23,6 +23,8 @@ user_include_re = re.compile(r'\s*#\s*include\s+"([^"]+)"\s*')
 
 
 SPECIAL_HEADERS = {
+    'version': '',
+
     'CoreFoundation/CoreFoundation.h': 
 '''
 #if (defined(__APPLE__) && defined(__MACH__))
