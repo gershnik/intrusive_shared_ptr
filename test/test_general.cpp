@@ -496,6 +496,21 @@ TEST_CASE( "Output" ) {
     CHECK( str1.str() == str2.str() );
 }
 
+#if ISPTR_SUPPORT_STD_FORMAT
+
+TEST_CASE( "Format" ) {
+
+    instrumented_counted<> object;
+    auto ptr = mock_noref(&object);
+
+    std::string res = std::format("{}", ptr);
+    std::string expected = std::format("{}", (void *)ptr.get());
+
+    CHECK(res == expected);
+}
+
+#endif
+
 }
 
 TEST_SUITE("output param") {

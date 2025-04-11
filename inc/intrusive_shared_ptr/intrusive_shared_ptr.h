@@ -399,10 +399,10 @@ namespace std
 {
     ISPTR_EXPORTED
     template<class Traits, class T>
-    class atomic<isptr::intrusive_shared_ptr<T, Traits>>
+    class atomic<::isptr::intrusive_shared_ptr<T, Traits>>
     {
     public:
-        using value_type = isptr::intrusive_shared_ptr<T, Traits>;
+        using value_type = ::isptr::intrusive_shared_ptr<T, Traits>;
     public:
         static constexpr bool is_always_lock_free = std::atomic<T *>::is_always_lock_free;
 
@@ -499,10 +499,10 @@ namespace std
 
     ISPTR_EXPORTED
     template<class T, class Traits>
-    class out_ptr_t<isptr::intrusive_shared_ptr<T, Traits>, T *>
+    class out_ptr_t<::isptr::intrusive_shared_ptr<T, Traits>, T *>
     {
     public:
-        constexpr out_ptr_t(isptr::intrusive_shared_ptr<T, Traits> & owner) noexcept:
+        constexpr out_ptr_t(::isptr::intrusive_shared_ptr<T, Traits> & owner) noexcept:
             m_p(&owner.m_p)
         {
             owner.reset();
@@ -524,10 +524,10 @@ namespace std
 
     ISPTR_EXPORTED
     template<class T, class Traits>
-    class inout_ptr_t<isptr::intrusive_shared_ptr<T, Traits>, T *>
+    class inout_ptr_t<::isptr::intrusive_shared_ptr<T, Traits>, T *>
     {
     public:
-        constexpr inout_ptr_t(isptr::intrusive_shared_ptr<T, Traits> & owner) noexcept :
+        constexpr inout_ptr_t(::isptr::intrusive_shared_ptr<T, Traits> & owner) noexcept :
             m_p(&owner.m_p)
         {}
         constexpr inout_ptr_t(inout_ptr_t && src) noexcept = default;
@@ -545,6 +545,18 @@ namespace std
         T ** m_p;
     };
 
+#endif
+
+#if ISPTR_SUPPORT_STD_FORMAT
+
+    ISPTR_EXPORTED
+    template<class T, class Traits, class CharT>
+    struct formatter<::isptr::intrusive_shared_ptr<T, Traits>, CharT> : public formatter<void *, CharT>
+    {
+        template <typename FormatContext>
+        auto format(const ::isptr::intrusive_shared_ptr<T, Traits> & ptr, FormatContext & ctx) const -> decltype(ctx.out()) 
+            { return formatter<void *, CharT>::format(ptr.get(), ctx); }
+    };
 #endif
 }
 

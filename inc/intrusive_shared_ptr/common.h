@@ -48,6 +48,20 @@
     
 #endif
 
+//See https://github.com/llvm/llvm-project/issues/77773 for the sad story of how feature test
+//macros are useless with libc++
+#if (__cpp_lib_format >= 201907L || (defined(_LIBCPP_VERSION) && _LIBCPP_VERSION >= 170000)) && __has_include(<format>)
+    
+    #include <format>
+    
+    #define ISPTR_SUPPORT_STD_FORMAT 1
+
+#else
+
+    #define ISPTR_SUPPORT_STD_FORMAT 0
+
+#endif
+
 
 #ifdef _MSC_VER
 
