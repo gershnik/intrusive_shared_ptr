@@ -325,14 +325,17 @@ namespace isptr
         T * m_p;
     };
 
-    template<class T>
-    std::false_type is_intrusive_shared_ptr_helper(const T &);
+    namespace internal {
 
-    template<class T, class Traits>
-    std::true_type is_intrusive_shared_ptr_helper(const intrusive_shared_ptr<T, Traits> &);
+        template<class T>
+        std::false_type is_intrusive_shared_ptr_helper(const T &);
+
+        template<class T, class Traits>
+        std::true_type is_intrusive_shared_ptr_helper(const intrusive_shared_ptr<T, Traits> &);
+    }
 
     template<class T>
-    using is_intrusive_shared_ptr = decltype(is_intrusive_shared_ptr_helper(std::declval<T>()));
+    using is_intrusive_shared_ptr = decltype(internal::is_intrusive_shared_ptr_helper(std::declval<T>()));
 
     template<class T>
     bool constexpr is_intrusive_shared_ptr_v = is_intrusive_shared_ptr<T>::value;
