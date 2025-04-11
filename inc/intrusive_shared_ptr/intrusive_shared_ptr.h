@@ -80,6 +80,26 @@ namespace isptr
         private:
             T ** m_p;
         };
+
+        class inout_param
+        {
+            friend class intrusive_shared_ptr<T, Traits>;
+        public:
+            constexpr operator T**() && noexcept
+                { return m_p; }
+
+        private:
+            constexpr inout_param(intrusive_shared_ptr<T, Traits> & owner) noexcept:
+                m_p(&owner.m_p)
+            {}
+            constexpr inout_param(inout_param && src) noexcept = default;
+            
+            inout_param(const inout_param &) = delete;
+            void operator=(const inout_param &) = delete;
+            void operator=(inout_param &&) = delete;
+        private:
+            T ** m_p;
+        };
     public:
         static constexpr intrusive_shared_ptr noref(T * p) noexcept
             { return intrusive_shared_ptr(p); }
@@ -180,6 +200,9 @@ namespace isptr
 
         constexpr output_param get_output_param() noexcept
             { return output_param(*this); }
+
+        constexpr inout_param get_inout_param() noexcept
+            { return inout_param(*this); }
         
         constexpr T * release() noexcept
         { 

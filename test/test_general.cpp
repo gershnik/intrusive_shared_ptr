@@ -517,6 +517,25 @@ TEST_CASE( "Output param" ) {
     CHECK( object1.count == 2 );
 }
 
+TEST_CASE( "Input Output param" ) {
+
+    instrumented_counted<> object, object1;
+    auto ptr = mock_noref(&object);
+    auto ptr1 = mock_noref(&object1);
+
+    auto func = [&] (instrumented_counted<> ** inout) {
+        CHECK(*inout == &object);
+        mock_traits<>::sub_ref(&object);
+        mock_traits<>::add_ref(&object1);
+        *inout = &object1;
+    };
+
+    func(ptr.get_inout_param());
+    CHECK( ptr.get() == &object1 );
+    CHECK( object.count == -1 );
+    CHECK( object1.count == 2 );
+}
+
 TEST_CASE( "Member pointer" ) {
 
     instrumented_counted<> object;
