@@ -133,30 +133,25 @@ This library base class allows user to enable a decent implementation of weak po
 ```cmake
 include(FetchContent)
 ...
-#Uncomment the next line to enable use of C++ module
-#set(ISPTR_PROVIDE_MODULE ON)
-#Uncomment the next line to enable Python pointers in C++ module 
-#set(ISPTR_ENABLE_PYTHON ON)
 
 FetchContent_Declare(isptr
     GIT_REPOSITORY  https://github.com/gershnik/intrusive_shared_ptr.git
-    GIT_TAG         v1.5  #use the tag, branch or sha you need
+    GIT_TAG         v1.8  #use the tag, branch or sha you need
     GIT_SHALLOW     TRUE
 )
 ...
 FetchContent_MakeAvailable(isptr)
 ...
+
+#To use header files:
 target_link_libraries(mytarget
 PRIVATE
   #To use header files:
   isptr::isptr
-
-  #To use C++ module use the following instead (note the *m*):
-  #For C++20 
-  #isptrm-20::isptrm-20
-  #For C++23
-  #isptrm-23::isptrm-23
 )
+
+#To use C++ module (the second param is the visibilty)
+isptr_add_module(mytarget PRIVATE)
 ```
 > ℹ&#xFE0F; _[What is FetchContent?](https://cmake.org/cmake/help/latest/module/FetchContent.html)_
 
@@ -193,9 +188,6 @@ You can also build and install this library on your system using CMake.
 ```bash
 cd SOME_PATH
 cmake -S . -B build 
-# If you want to enable use of C++ modules use the following
-# cmake -S . -B build -DISPTR_PROVIDE_MODULE=ON
-cmake --build build
 
 #Optional
 #cmake --build build --target run-test
@@ -213,28 +205,23 @@ Once the library has been installed it can be used int the following ways:
 To use the header files set the include directory to `<prefix>/include` where `<prefix>` 
 is the install prefix from above.
 
-To use C++ module (if enabled during the build) include `<prefix>/lib/isptr/isptr.cppm` in your
-build. To have the module expose Python smart pointers make sure you `-DISPTR_ENABLE_PYTHON=1` for
-**module file compilation**.
+To use C++ module (if enabled during the build) include `<prefix>/include/intrusive_shared_ptr/isptr.cppm` 
+in your build.
 
 
 #### CMake package
 
 ```cmake
-#Uncomment the next line to enable use of C++ module
-#set(ISPTR_PROVIDE_MODULE ON)
-#Uncomment the next line to enable Python pointers in C++ module 
-#set(ISPTR_ENABLE_PYTHON ON)
-
 find_package(isptr)
 
+#To use header files:
 target_link_libraries(mytarget
 PRIVATE
-  #To use header files:
   isptr::isptr
-  #To use C++ module use the following instead (note the *m*):
-  #isptrm::isptrm
 )
+
+#To use C++ module (the second param is the visibilty)
+isptr_add_module(mytarget PRIVATE)
 ```
 
 #### Via `pkg-config`
@@ -255,8 +242,8 @@ You can also simply download this repository from [Releases](https://github.com/
 (named `intrusive_shared_ptr-X.Y.tar.gz`) and unpack it somewhere in your source tree.
 
 To use header files add the `inc` sub-directory to your include path.
-To use the module add `modules/isptr.cppm` to your build. To have the module expose Python smart pointers make sure you `-DISPTR_ENABLE_PYTHON=1` for **module file compilation**.
 
+To use the module add `modules/isptr.cppm` to your build. 
 
 ## Usage 
 
@@ -497,9 +484,6 @@ std::cout << PyUnicode_GetLength(str.get());
 
 ```
 
-Note that to use Python smart pointers with C++ module you need ensure `-DISPTR_ENABLE_PYTHON=1` is used for **module file compilation**. When using CMake this is accomplished by `set(ISPTR_ENABLE_PYTHON ON)` in CMake code or via 
-`-DISPTR_ENABLE_PYTHON=ON` during configuration. 
-
 ### Using with non-reference counted types
 
 On occasion when you have a code that uses intrusive reference counting a lot you might need to handle a type
@@ -600,26 +584,17 @@ Due to non-default destructors this functionality is not available on C++17
 
 ## Module support
 
-Since version 1.5 this library support being used as a C++ module. This mode is currently **experimental**. Please report bugs if you encounter any issues.
+Since version 1.5 this library support being used as a C++ module. 
+This mode is currently **experimental**. Please report bugs if you encounter any issues.
 
-In order to use C++ modules you need a compiler that supports them. Currently CLang >= 16 and MSVC toolset >= 14.34 are definitely known to work. Other compilers/versions may or may not work.
+In order to use C++ modules you need a compiler that supports them. 
+Currently CLang >= 16 and MSVC toolset >= 14.34 are definitely known to work. 
+Other compilers/versions may or may not work.
 
-If using CMake follow the requirements at [cmake-cxxmodules](https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html). In order to enable module support for this library you need to set `ISPTR_PROVIDE_MODULE` CMake variable to `ON` before referencing it. 
+If using CMake follow the requirements at [cmake-cxxmodules](https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html). 
 
-The library consists of a single module file at [modules/isptr.cppm](modules/isptr.cppm). This file is auto-generated from all the library headers.
-
-One notable difference between headers and module use concerns Python pointers. With header files you can simply control whether to use them by including or not including `<intrusive_shared_ptr/python_ptr.h>`. 
-
-With module, which is compiled separately, you need to tell the module file whether to enable Python pointers (and use `<Python.h>` header) ahead of time. 
-
-If you compile module yourself you can control whether Python pointers are enabled by setting `-DISPTR_ENABLE_PYTHON=1` for its compilation and make sure the include path contains `<Python.h>`.
-
-If you use CMake then you need to set CMake option `ISPTR_ENABLE_PYTHON` to `ON` either from command line or in CMake code before referencing this library. With this variable set to `ON` the CMake script will
-- Perform `find_package (Python3 COMPONENTS Development REQUIRED)` if Python development component hasn't been already found.
-- Add `Python3_INCLUDE_DIRS` to module include path and define `ISPTR_ENABLE_PYTHON=1`
-- Add `Python3_LIBRARIES` to library dependencies. 
-
-You can control which Python installation to use by controlling `find_package (Python3)` (or calling it yourself ahead of time) as described in [FindPython3](https://cmake.org/cmake/help/latest/module/FindPython3.html)
+The library consists of a single module file at [modules/isptr.cppm](modules/isptr.cppm). 
+This file is auto-generated from all the library headers. Include it in your build.
 
 ## Reference
 

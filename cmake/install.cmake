@@ -12,13 +12,8 @@ include(CMakePackageConfigHelpers)
 install(TARGETS isptr EXPORT isptr FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT isptr NAMESPACE isptr:: FILE isptr-exports.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/isptr)
 
-if (ISPTR_PROVIDE_MODULE)
-    foreach(MODULE_STANDARD ${MODULE_STANDARDS})
-        set(MODULE_LIB_NAME isptrm-${MODULE_STANDARD})
-        install(TARGETS ${MODULE_LIB_NAME} EXPORT ${MODULE_LIB_NAME} FILE_SET CXX_MODULES DESTINATION ${CMAKE_INSTALL_LIBDIR}/isptr)
-        install(EXPORT ${MODULE_LIB_NAME} NAMESPACE ${MODULE_LIB_NAME}:: FILE ${MODULE_LIB_NAME}-exports.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/isptr)
-    endforeach()
-endif()
+install(FILES ${SRCDIR}/modules/isptr.cppm DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/intrusive_shared_ptr)
+
 
 configure_package_config_file(
         ${CMAKE_CURRENT_LIST_DIR}/isptr-config.cmake.in

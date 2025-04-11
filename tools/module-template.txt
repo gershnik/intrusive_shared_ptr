@@ -17,7 +17,7 @@ export module isptr;
 #include "ref_counted.h"
 #include "apple_cf_ptr.h"
 #include "com_ptr.h"
-#if ISPTR_ENABLE_PYTHON
+#if __has_include(<Python.h>)
 #include "python_ptr.h"
 #endif
 #include "refcnt_ptr.h"

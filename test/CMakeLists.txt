@@ -31,7 +31,7 @@ set(CXX_STANDARD_20 20)
 set(CXX_STANDARD_23 23)
 
 set(TEST_VARIANTS_17 "headers")
-if (${ISPTR_PROVIDE_MODULE})
+if (${ISPTR_ENABLE_MODULE})
     set(TEST_VARIANTS_20 "headers;module")
     set(TEST_VARIANTS_23 "headers;module")
 else()
@@ -78,7 +78,7 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
 
         target_link_libraries(${TEST_TARGET_NAME} PRIVATE
             "$<$<PLATFORM_ID:Darwin>:-framework CoreFoundation>"
-            $<IF:$<STREQUAL:${TEST_VARIANT},module>,isptrm-${TEST_SUFFIX}::isptrm-${TEST_SUFFIX},isptr::isptr>
+            "$<$<NOT:$<STREQUAL:${TEST_VARIANT},module>>:isptr::isptr>"
         )
 
         target_compile_options(${TEST_TARGET_NAME} PRIVATE
@@ -93,6 +93,10 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
             $<$<STREQUAL:${TEST_VARIANT},module>:ISPTR_USE_MODULES=1>
             _FILE_OFFSET_BITS=64  # prevents weird issues with modules and clang on Ubuntu
         )
+
+        if (${TEST_VARIANT} STREQUAL "module")
+            isptr_add_module(${TEST_TARGET_NAME} PRIVATE)
+        endif()
 
         target_sources(${TEST_TARGET_NAME} PRIVATE
 

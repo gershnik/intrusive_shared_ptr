@@ -12,41 +12,25 @@
 # Avoid repeatedly including the targets
 if(NOT TARGET isptr::isptr)
     include(${CMAKE_CURRENT_LIST_DIR}/isptr-exports.cmake)
-endif()
 
-if(ISPTR_PROVIDE_MODULE)
-    if(NOT TARGET isptrm::isptrm)
-        include(${CMAKE_CURRENT_LIST_DIR}/isptrm-exports.cmake)
-
-        if(ISPTR_ENABLE_PYTHON AND NOT Python3_Development_FOUND)
-            find_package (Python3 COMPONENTS Development REQUIRED)
-        endif()
-
-        add_library(isptrm_helper INTERFACE)
-        add_library(isptrm::helper ALIAS isptrm_helper)
-
-        if (ISPTR_ENABLE_PYTHON)
-
-            target_include_directories(isptrm_helper SYSTEM
-            INTERFACE
-                ${Python3_INCLUDE_DIRS}
-            )
-
-            target_link_libraries(isptrm_helper
-            INTERFACE
-                ${Python3_LIBRARIES}
-            )
-
-            target_compile_definitions(isptrm_helper 
-            INTERFACE
-                ISPTR_ENABLE_PYTHON=1
-            )
-        endif()
-
-        target_link_libraries(isptrm::isptrm
-        INTERFACE
-            isptrm::helper
-        )
+    get_filename_component(IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
+    get_filename_component(IMPORT_PREFIX "${IMPORT_PREFIX}" PATH)
+    get_filename_component(IMPORT_PREFIX "${IMPORT_PREFIX}" PATH)
+    if(_IMPORT_PREFIX STREQUAL "/")
+      set(IMPORT_PREFIX "")
     endif()
+
+    set(ISPTR_MODULES_BASE_DIRS "${IMPORT_PREFIX}/include/intrusive_shared_ptr")
+    set(ISPTR_MODULES_FILES "${IMPORT_PREFIX}/include/intrusive_shared_ptr/isptr.cppm")
+
+    function(isptr_add_module target_name visibility)
+        target_sources(${target_name} ${visibility}
+            FILE_SET isptr_module TYPE CXX_MODULES BASE_DIRS ${ISPTR_MODULES_BASE_DIRS} FILES ${ISPTR_MODULES_FILES}
+        )
+    endfunction()
+
+    set(IMPORT_PREFIX)
+
 endif()
+
 

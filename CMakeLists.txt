@@ -16,11 +16,6 @@ string(STRIP ${ISPTR_VERSION} ISPTR_VERSION)
 
 project(isptr VERSION ${ISPTR_VERSION} LANGUAGES CXX)
 
-
-option(ISPTR_PROVIDE_MODULE "whether C++ module target should be provided" OFF)
-option(ISPTR_ENABLE_PYTHON "whether to enable Python support in C++ module" OFF)
-
-
 set(SRCDIR ${CMAKE_CURRENT_LIST_DIR})
 set(LIBNAME isptr)
 
@@ -53,73 +48,15 @@ PRIVATE
 add_library(intrusive-shared-ptr ALIAS ${LIBNAME})
 add_library(${LIBNAME}::${LIBNAME} ALIAS ${LIBNAME})
 
-if(ISPTR_PROVIDE_MODULE)
+set(ISPTR_MODULES_BASE_DIRS ${SRCDIR}/modules)
+set(ISPTR_MODULES_FILES ${SRCDIR}/modules/isptr.cppm)
 
-    if(ISPTR_ENABLE_PYTHON AND NOT Python3_Development_FOUND)
-        find_package (Python3 COMPONENTS Development REQUIRED)
-    endif()
-
-    add_library(${LIBNAME}m_helper INTERFACE)
-    add_library(${LIBNAME}m::helper ALIAS ${LIBNAME}m_helper)
-
-    if (ISPTR_ENABLE_PYTHON)
-
-        target_include_directories(${LIBNAME}m_helper SYSTEM
-        INTERFACE
-            ${Python3_INCLUDE_DIRS}
-        )
-
-        target_link_libraries(${LIBNAME}m_helper 
-        INTERFACE
-            ${Python3_LIBRARIES}
-        )
-
-        target_compile_definitions(${LIBNAME}m_helper 
-        INTERFACE
-            ISPTR_ENABLE_PYTHON=1
-        )
-
-    endif()
-
-    set(MODULE_STANDARDS 
-        20
-        23
+function(isptr_add_module target_name visibility)
+    target_sources(${target_name} ${visibility}
+        FILE_SET isptr_module TYPE CXX_MODULES BASE_DIRS ${ISPTR_MODULES_BASE_DIRS} FILES ${ISPTR_MODULES_FILES}
     )
-    foreach(MODULE_STANDARD ${MODULE_STANDARDS})
+endfunction()
 
-        set(MODULE_LIB_NAME ${LIBNAME}m-${MODULE_STANDARD})
-
-        add_library(${MODULE_LIB_NAME} OBJECT)
-
-        target_compile_features(${MODULE_LIB_NAME}
-        PUBLIC
-            cxx_std_20
-        )
-
-        set_target_properties(${MODULE_LIB_NAME} PROPERTIES
-            CXX_STANDARD ${MODULE_STANDARD}
-            CXX_STANDARD_REQUIRED YES
-            CXX_EXTENSIONS OFF
-            CXX_VISIBILITY_PRESET hidden
-            VISIBILITY_INLINES_HIDDEN ON 
-        )
-
-        target_link_libraries(${MODULE_LIB_NAME}
-        PRIVATE
-            $<BUILD_INTERFACE:${LIBNAME}m::helper>
-        )
-
-        target_sources(${MODULE_LIB_NAME}
-        PUBLIC 
-            FILE_SET CXX_MODULES BASE_DIRS ${SRCDIR}/modules FILES
-                ${SRCDIR}/modules/isptr.cppm
-        )
-
-        add_library(${MODULE_LIB_NAME}::${MODULE_LIB_NAME} ALIAS ${MODULE_LIB_NAME})
-
-    endforeach()
-
-endif()
 
 if (PROJECT_IS_TOP_LEVEL)
 

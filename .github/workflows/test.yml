@@ -94,7 +94,7 @@ jobs:
         fi
 
         if [[ '${{ matrix.module}}' == 'true' ]]; then
-            echo "CMAKE_ARGS=-DISPTR_PROVIDE_MODULE=ON" >> $GITHUB_ENV
+            echo "CMAKE_ARGS=-DISPTR_ENABLE_MODULE=ON" >> $GITHUB_ENV
         fi
 
     - name: Configure

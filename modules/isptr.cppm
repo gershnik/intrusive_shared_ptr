@@ -12,7 +12,7 @@ module;
     #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#if ISPTR_ENABLE_PYTHON
+#if __has_include(<Python.h>)
     #include <Python.h>
 #endif
 
@@ -1387,7 +1387,7 @@ namespace isptr
 #endif
 
 #endif
-#if ISPTR_ENABLE_PYTHON
+#if __has_include(<Python.h>)
 
 #ifndef HEADER_PYTHON_PTR_H_INCLUDED
 #define HEADER_PYTHON_PTR_H_INCLUDED

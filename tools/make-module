@@ -49,7 +49,7 @@ SPECIAL_HEADERS = {
 
     'Python.h':
 '''
-#if ISPTR_ENABLE_PYTHON
+#if __has_include(<Python.h>)
     ##INCLUDE##
 #endif
 '''.lstrip()
