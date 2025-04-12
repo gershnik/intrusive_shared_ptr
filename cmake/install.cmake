@@ -12,7 +12,7 @@ include(CMakePackageConfigHelpers)
 install(TARGETS isptr EXPORT isptr FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT isptr NAMESPACE isptr:: FILE isptr-exports.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/isptr)
 
-install(FILES ${SRCDIR}/modules/isptr.cppm DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/intrusive_shared_ptr)
+install(FILES ${SRCDIR}/modules/isptr.cppm DESTINATION ${CMAKE_INSTALL_LIBDIR}/isptr)
 
 
 configure_package_config_file(

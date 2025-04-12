@@ -13,15 +13,10 @@
 if(NOT TARGET isptr::isptr)
     include(${CMAKE_CURRENT_LIST_DIR}/isptr-exports.cmake)
 
-    get_filename_component(IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
-    get_filename_component(IMPORT_PREFIX "${IMPORT_PREFIX}" PATH)
-    get_filename_component(IMPORT_PREFIX "${IMPORT_PREFIX}" PATH)
-    if(_IMPORT_PREFIX STREQUAL "/")
-      set(IMPORT_PREFIX "")
-    endif()
-
-    set(ISPTR_MODULES_BASE_DIRS "${IMPORT_PREFIX}/include/intrusive_shared_ptr")
-    set(ISPTR_MODULES_FILES "${IMPORT_PREFIX}/include/intrusive_shared_ptr/isptr.cppm")
+    get_filename_component(MYPATH "${CMAKE_CURRENT_LIST_FILE}" PATH)
+    
+    set(ISPTR_MODULES_BASE_DIRS "${MYPATH}")
+    set(ISPTR_MODULES_FILES "${MYPATH}/isptr.cppm")
 
     function(isptr_add_module target_name visibility)
         target_sources(${target_name} ${visibility}
@@ -29,7 +24,7 @@ if(NOT TARGET isptr::isptr)
         )
     endfunction()
 
-    set(IMPORT_PREFIX)
+    set(MYPATH)
 
 endif()
 
