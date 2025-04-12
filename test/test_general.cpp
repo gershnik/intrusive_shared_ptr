@@ -562,4 +562,13 @@ TEST_CASE( "Member pointer" ) {
     CHECK(x == 1);
 }
 
+TEST_CASE( "Hash code" ) {
+
+    instrumented_counted<> object;
+    auto ptr = mock_noref(&object);
+    
+    CHECK(std::hash<decltype(ptr)>()(ptr) == std::hash<instrumented_counted<> *>()(&object));
+    CHECK(std::hash<decltype(ptr)>()(ptr) == hash_value(ptr));
+}
+
 }

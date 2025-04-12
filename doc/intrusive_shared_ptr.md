@@ -85,7 +85,8 @@ using traits_type = Traits;
   any traits as well as raw pointers and nullptr.
 - Comparisons: `<`, `<=`, `>=`, `>`. All `noexcept`. On C++20 these are replaced by `<=>`. Work between `intrusive_shared_ptr` of compatible types and
   any traits as well as raw pointers.
-- Namespace method: `template<class Char> friend std::basic_ostream<Char> & operator<<(std::basic_ostream<Char> & str, const intrusive_shared_ptr<T, Traits> & ptr)` (ADL only) outputs the stored pointer value to a stream
+- Hash code: `constexpr size_t hash_value(const intrusive_shared_ptr<T, Traits> & ptr) noexcept`. 
+- Stream output: `template<class Char> friend std::basic_ostream<Char> & operator<<(std::basic_ostream<Char> & str, const intrusive_shared_ptr<T, Traits> & ptr)` (ADL only) outputs the stored pointer value to a stream
 
 - `Dest intrusive_const_cast<Dest>(intrusive_shared_ptr src) noexcept`. Performs an equivalent of `const_cast` on passed argument. The destination type needs to be a valid `intrusive_shared_ptr` type whose underlying type is convertible from source's via `const_cast`.
 - `Dest intrusive_static_cast<Dest>(intrusive_shared_ptr src) noexcept`. Performs an equivalent of `static_cast` on passed argument. The destination type needs to be a valid `intrusive_shared_ptr` type whose underlying type is convertible from source's via `static_cast`.
@@ -96,6 +97,7 @@ using traits_type = Traits;
 - `std::out_ptr_t<intrusive_shared_ptr>` and `std::inout_ptr_t<intrusive_shared_ptr>`. Provide support for using
   `std::out_ptr` and `std::inout_ptr` with `intrusive_shared_ptr`
 - `std::formatter<intrusive_shared_ptr>`. Provides support for using `std::format` with `intrusive_shared_ptr` instances
+- `std::hash<intrusive_shared_ptr>`
 
 ## Class std::atomic&lt;isptr::intrusive_shared_ptr&gt;
 

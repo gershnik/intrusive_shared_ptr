@@ -37,8 +37,6 @@
 #endif
 
 #if __cpp_lib_out_ptr >= 202106L
-    
-    #include <memory>
 
     #define ISPTR_SUPPORT_OUT_PTR 1
 

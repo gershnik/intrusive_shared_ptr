@@ -71,7 +71,6 @@ export module isptr;
 #endif
 
 #if __cpp_lib_out_ptr >= 202106L
-    
 
     #define ISPTR_SUPPORT_OUT_PTR 1
 
@@ -447,6 +446,9 @@ namespace isptr
         template<class Char>
         friend std::basic_ostream<Char> & operator<<(std::basic_ostream<Char> & str, const intrusive_shared_ptr<T, Traits> & ptr)
             { return str << ptr.m_p; }
+
+        friend constexpr size_t hash_value(const intrusive_shared_ptr<T, Traits> & ptr) noexcept 
+            { return std::hash<T *>()(ptr.m_p); }
         
     private:
         constexpr intrusive_shared_ptr(T * ptr) noexcept :
@@ -670,6 +672,14 @@ namespace std
             { return formatter<void *, CharT>::format(ptr.get(), ctx); }
     };
 #endif
+
+    ISPTR_EXPORTED
+    template<class T, class Traits>
+    struct hash<::isptr::intrusive_shared_ptr<T, Traits>> 
+    {
+        constexpr size_t operator()(const ::isptr::intrusive_shared_ptr<T, Traits> & ptr) const noexcept 
+            { return hash_value(ptr); }
+    };
 }
 
 #undef ISPTR_TRIVIAL_ABI
