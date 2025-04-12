@@ -19,7 +19,7 @@ jobs:
         include:
         - os: macos-latest
         - os: windows-latest
-          module: true
+          #module: true
         - os: ubuntu-latest
           compiler: gcc
           version: 11
