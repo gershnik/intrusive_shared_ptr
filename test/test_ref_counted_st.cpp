@@ -1,6 +1,4 @@
-#if ISPTR_USE_MODULES
-    import isptr;
-#else
+#if !ISPTR_USE_MODULES
     #include <intrusive_shared_ptr/ref_counted.h>
     #include <intrusive_shared_ptr/refcnt_ptr.h>
 #endif
@@ -10,6 +8,9 @@
 #include <vector>
 #include <stdexcept>
 
+#if ISPTR_USE_MODULES
+    import isptr;
+#endif
 
 using namespace isptr;
 

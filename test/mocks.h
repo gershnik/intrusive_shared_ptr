@@ -1,4 +1,5 @@
-
+#ifndef TEST_HEADER_MOCKS_H_INCLUDED
+#define TEST_HEADER_MOCKS_H_INCLUDED
 
 template<int Tag = 1>
 struct instrumented_counted
@@ -61,3 +62,5 @@ template<class T>
 mock_ptr_different_traits<T> mock_noref_different_traits(T * ptr) {
     return mock_ptr_different_traits<T>::noref(ptr);
 }
+
+#endif

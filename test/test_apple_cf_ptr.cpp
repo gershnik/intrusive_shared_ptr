@@ -1,10 +1,12 @@
-#if ISPTR_USE_MODULES
-    import isptr;
-#else
+#if !ISPTR_USE_MODULES
     #include <intrusive_shared_ptr/apple_cf_ptr.h>
 #endif
 
 #include <doctest/doctest.h>
+
+#if ISPTR_USE_MODULES
+    import isptr;
+#endif
 
 #if (defined(__APPLE__) && defined(__MACH__))
 

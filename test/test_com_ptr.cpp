@@ -1,14 +1,16 @@
 
-#if ISPTR_USE_MODULES
-    import isptr;
-    #ifdef _WIN32
-        #include <Unknwn.h>
-    #endif
-#else
+#if !ISPTR_USE_MODULES
     #include <intrusive_shared_ptr/com_ptr.h>
 #endif
 
 #include <doctest/doctest.h>
+
+#if ISPTR_USE_MODULES
+    #ifdef _WIN32
+        #include <Unknwn.h>
+    #endif
+    import isptr;
+#endif
 
 #ifdef _WIN32
 

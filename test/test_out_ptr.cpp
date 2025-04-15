@@ -1,10 +1,13 @@
-#if ISPTR_USE_MODULES
-    import isptr;
-#else
+#if !ISPTR_USE_MODULES
     #include <intrusive_shared_ptr/intrusive_shared_ptr.h>
 #endif
 
 #include <doctest/doctest.h>
+
+#if ISPTR_USE_MODULES
+    import isptr;
+#endif
+
 #include "mocks.h"
 
 using namespace isptr;
