@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [1.8] - 2025-04-14
+
 ### Added
 - Support for `std::format` (if available). Instances of `intrusive_shared_ptr` can be passed to `std::format`
   and will be printed like a `void *`.
@@ -87,3 +89,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [1.5]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.5
 [1.6]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.6
 [1.7]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.7
+[1.8]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.8
