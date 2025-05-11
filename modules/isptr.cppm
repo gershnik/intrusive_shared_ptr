@@ -512,7 +512,6 @@ namespace isptr
 
 namespace std
 {
-    ISPTR_EXPORTED
     template<class Traits, class T>
     class atomic<::isptr::intrusive_shared_ptr<T, Traits>>
     {
@@ -612,7 +611,6 @@ namespace std
 
 #if ISPTR_SUPPORT_OUT_PTR
 
-    ISPTR_EXPORTED
     template<class T, class Traits>
     class out_ptr_t<::isptr::intrusive_shared_ptr<T, Traits>, T *>
     {
@@ -637,7 +635,6 @@ namespace std
         T ** m_p;
     };
 
-    ISPTR_EXPORTED
     template<class T, class Traits>
     class inout_ptr_t<::isptr::intrusive_shared_ptr<T, Traits>, T *>
     {
@@ -664,7 +661,6 @@ namespace std
 
 #if ISPTR_SUPPORT_STD_FORMAT
 
-    ISPTR_EXPORTED
     template<class T, class Traits, class CharT>
     struct formatter<::isptr::intrusive_shared_ptr<T, Traits>, CharT> : public formatter<void *, CharT>
     {
@@ -674,7 +670,6 @@ namespace std
     };
 #endif
 
-    ISPTR_EXPORTED
     template<class T, class Traits>
     struct hash<::isptr::intrusive_shared_ptr<T, Traits>> 
     {
