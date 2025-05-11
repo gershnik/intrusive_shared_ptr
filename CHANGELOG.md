@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [1.9] - 2025-05-11
+
 ## Fixed
 - Restored support for pre-3.28 CMake. Module functionality will not be available under those
 - GCC15 error (declaration of partial specialization in unbraced export-declaration) when using module 
@@ -94,3 +96,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [1.6]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.6
 [1.7]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.7
 [1.8]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.8
+[1.9]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.9
