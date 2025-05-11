@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## Fixed
+- Restored support for pre-3.28 CMake. Module functionality will not be available under those
+- GCC15 error (declaration of partial specialization in unbraced export-declaration) when using module 
+
 ## [1.8] - 2025-04-14
 
 ### Added
