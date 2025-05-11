@@ -13,27 +13,28 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
     strategy:
       fail-fast: false
       matrix:
         include:
-        - { os: macos-latest }
+        - { os: macos-latest, name: 'macOS latest' }
         
-        - { os: windows-latest, module: true } 
+        - { os: windows-latest, module: true, name: 'Windows latest' } 
         
-        - { os: ubuntu-latest, compiler: gcc, version: 11 }
-        - { os: ubuntu-latest, compiler: gcc, version: 12 }
-        - { os: ubuntu-latest, compiler: gcc, version: 13 }
-        - { os: ubuntu-24.04, compiler: gcc, version: 14, module: true }
+        - { os: ubuntu-latest, compiler: gcc, version: 11, name: 'GCC 11' }
+        - { os: ubuntu-latest, compiler: gcc, version: 12, name: 'GCC 12' }
+        - { os: ubuntu-latest, compiler: gcc, version: 13, name: 'GCC 13' }
+        - { os: ubuntu-24.04, compiler: gcc, version: 14, module: true, name: 'GCC 14' }
         
-        - { os: ubuntu-22.04, compiler: clang, version: 13 }
-        - { os: ubuntu-22.04, compiler: clang ,version: 14 }
-        - { os: ubuntu-22.04, compiler: clang, version: 15 }
-        - { os: ubuntu-22.04, compiler: clang, version: 16 }
-        - { os: ubuntu-latest, compiler: clang, version: 17 }
-        - { os: ubuntu-latest, compiler: clang, version: 18, module: true }
-        - { os: ubuntu-latest, compiler: clang, version: 19, module: true }
-        - { os: ubuntu-latest, compiler: clang, version: 20, module: true }
+        - { os: ubuntu-22.04, compiler: clang, version: 13, name: 'Clang 13' }
+        - { os: ubuntu-22.04, compiler: clang ,version: 14, name: 'Clang 14' }
+        - { os: ubuntu-22.04, compiler: clang, version: 15, name: 'Clang 15' }
+        - { os: ubuntu-22.04, compiler: clang, version: 16, name: 'Clang 16' }
+        - { os: ubuntu-latest, compiler: clang, version: 17, name: 'Clang 17' }
+        - { os: ubuntu-latest, compiler: clang, version: 18, module: true, name: 'Clang 13' }
+        - { os: ubuntu-latest, compiler: clang, version: 19, module: true, name: 'Clang 19' }
+        - { os: ubuntu-latest, compiler: clang, version: 20, module: true, name: 'Clang 20' }
 
     steps:
     - name: Checkout
@@ -89,12 +90,13 @@ jobs:
 
   container:
     runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
     container: ${{ matrix.container }}
     strategy:
       fail-fast: false
       matrix: 
         include:
-        - {container: gcc:15.1, module: true}
+        - {container: gcc:15.1, module: true, name: 'GCC 15'}
     
     steps:
     - name: Checkout

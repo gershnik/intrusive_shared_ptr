@@ -125,7 +125,7 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
         list(APPEND TEST_COMMAND COMMAND)
         list(APPEND TEST_COMMAND echo Running: ${TEST_TARGET_NAME})
         list(APPEND TEST_COMMAND COMMAND)
-        list(APPEND TEST_COMMAND ${TEST_TARGET_NAME})
+        list(APPEND TEST_COMMAND ${TEST_TARGET_NAME} -ni -fc)
 
     endforeach()
 
