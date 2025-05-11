@@ -51,12 +51,15 @@ add_library(${LIBNAME}::${LIBNAME} ALIAS ${LIBNAME})
 set(ISPTR_MODULES_BASE_DIRS ${SRCDIR}/modules)
 set(ISPTR_MODULES_FILES ${SRCDIR}/modules/isptr.cppm)
 
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.28")
+
 function(isptr_add_module target_name visibility)
     target_sources(${target_name} ${visibility}
         FILE_SET isptr_module TYPE CXX_MODULES BASE_DIRS ${ISPTR_MODULES_BASE_DIRS} FILES ${ISPTR_MODULES_FILES}
     )
 endfunction()
 
+endif()
 
 if (PROJECT_IS_TOP_LEVEL)
 

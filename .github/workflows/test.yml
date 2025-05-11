@@ -25,7 +25,6 @@ jobs:
         - { os: ubuntu-latest, compiler: gcc, version: 12 }
         - { os: ubuntu-latest, compiler: gcc, version: 13 }
         - { os: ubuntu-24.04, compiler: gcc, version: 14, module: true }
-        #- { os: ubuntu-24.04, compiler: gcc, version: 15, module: true }
         
         - { os: ubuntu-22.04, compiler: clang, version: 13 }
         - { os: ubuntu-22.04, compiler: clang ,version: 14 }
@@ -88,3 +87,47 @@ jobs:
       run: |
         cmake --build build --config Release --target run-test
 
+  container:
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    strategy:
+      fail-fast: false
+      matrix: 
+        include:
+        - {container: gcc:15.1, module: true}
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: System Setup
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y python3-dev
+
+        export CMAKE_VERSION=3.28.6
+        wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.sh \
+          -q -O /tmp/cmake-install.sh \
+        && chmod u+x /tmp/cmake-install.sh \
+        && /tmp/cmake-install.sh --skip-license --prefix=/usr \
+        rm -f /tmp/cmake-install.sh
+
+        wget -qO- https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip | \
+              gunzip > /usr/bin/ninja
+        chmod a+x /usr/bin/ninja
+        echo "CMAKE_GENERATOR=-GNinja" >> $GITHUB_ENV
+
+        if [[ '${{ matrix.module}}' == 'true' ]]; then
+            echo "CMAKE_ARGS=-DISPTR_ENABLE_MODULE=ON" >> $GITHUB_ENV
+        fi
+
+    - name: Configure
+      shell: bash
+      run: |
+        cmake $CMAKE_GENERATOR -S . -B build $CMAKE_ARGS -DISPTR_ENABLE_PYTHON=ON -DCMAKE_BUILD_TYPE=Release 
+  
+    - name: Build and Test
+      shell: bash
+      run: |
+        cmake --build build --config Release --target run-test
