@@ -50,7 +50,7 @@ Documentation and formal tests are work in progress.
 
 ## Why bother?
 There are multiple other intrusive smart pointers available including one from [Boost](https://www.boost.org/doc/libs/1_71_0/libs/smart_ptr/doc/html/smart_ptr.html#intrusive_ptr)
-and nowadays there is even a [proposal](http://open-std.org/JTC1/SC22/WG21/docs/papers/2016/p0468r0.html) 
+and there was even a [proposal](http://open-std.org/JTC1/SC22/WG21/docs/papers/2016/p0468r0.html) 
 to add one to the standard C++ library, so why create another one?
 Unfortunately, as far as I can tell, all existing implementations, and that includes the standard library proposal at the time
 of this writing, suffer from numerous deficiencies that make them hard or annoying to use in real life code. 
@@ -90,8 +90,8 @@ The right solution is to have a proxy class convertible to `T **`.
 Since C++23 the standard library provides `std::out_ptr` and `std::inout_ptr` to deal with this issue. This library
 fully supports those when they are available.
 
-When standard library support is not available, this library also exposes `get_output_param()` method that 
-returns an inner proxy class (which behaves similarly to `std::out_ptr_t`) 
+When standard library support is not available, this library also exposes `get_output_param()` and `get_inout_param` 
+methods that return an inner proxy class (which behaves similarly to `std::out_ptr_t`/`std::inout_ptr`) 
 
 ### Support for `operator->*`
 
@@ -107,7 +107,8 @@ This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>
 
 ### Trivial ABI
 
-When built with CLang compiler `intrusive_shared_ptr` is marked with [\[\[clang::trivial_abi\]\]](https://clang.llvm.org/docs/AttributeReference.html#trivial-abi) attribute. A good description of what this attribute does and why it is important
+When built with CLang compiler `intrusive_shared_ptr` is marked with [\[\[clang::trivial_abi\]\]](https://clang.llvm.org/docs/AttributeReference.html#trivial-abi) 
+attribute. A good description of what this attribute does and why it is important
 for performance can be found [here](https://quuxplusone.github.io/blog/2018/05/02/trivial-abi-101/).
 Another take on the performance issue as a comment on standard library proposal can be found 
 [here](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1351r0.html#params).
@@ -122,7 +123,8 @@ create a base class that can work well for different requirements without compro
 
 ### Support for weak pointers
 
-Continuing on the base class theme, when doing intrusive reference counting, supporting (or not) weak pointers is the responsibility of the counted class. Supporting weak pointers also usually involves tradeoffs in terms of performance or memory consumption. 
+Continuing on the base class theme, when doing intrusive reference counting, supporting (or not) weak pointers is the responsibility 
+of the counted class. Supporting weak pointers also usually involves tradeoffs in terms of performance or memory consumption. 
 This library base class allows user to enable a decent implementation of weak pointers via policy based design. 
 
 
@@ -197,7 +199,7 @@ sudo cmake --install build
 #cmake --install build --prefix /usr
 ```
 
-Once the library has been installed it can be used int the following ways:
+Once the library has been installed it can be used in the following ways:
 
 #### Basic use 
 
@@ -405,7 +407,7 @@ More details can be found in [this document](doc/ref_counted.md)
 ### Supporting weak pointers
 
 If you want to support weak pointers you need to tell `ref_counted` about it. Since weak pointers include overhead
-even if you never create one by default they are disabled.
+even if you never create one, by default they are disabled.
 
 ```cpp
 #include <intrusive_shared_ptr/ref_counted.h>
