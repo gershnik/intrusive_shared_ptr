@@ -36,6 +36,7 @@ Documentation and formal tests are work in progress.
         - [Via pkg-config](#via-pkg-config)
     - [Copying to your sources](#copying-to-your-sources)
 - [Usage](#usage)
+    - [Basics](#basics)
     - [Using provided base classes](#using-provided-base-classes)
     - [Supporting weak pointers](#supporting-weak-pointers)
     - [Using with Apple CoreFoundation types](#using-with-apple-corefoundation-types)
@@ -251,7 +252,9 @@ To use header files add the `inc` sub-directory to your include path.
 
 To use the module add `modules/isptr.cppm` to your build. 
 
-## Usage 
+## Usage
+
+### Basics
 
 All the types in this library are declared in `namespace isptr`. For brevity the namespace is omitted below.
 Add `isptr::` prefix to all the type or use `using` declaration in your own code.
