@@ -27,6 +27,7 @@ Documentation and formal tests are work in progress.
     - [Support for weak pointers](#support-for-weak-pointers)
 - [Integration](#integration)
     - [CMake via FetchContent](#cmake-via-fetchcontent)
+    - [Conan](#conan)
     - [Vcpkg](#vcpkg)
     - [Platform package managers](#platform-package-managers)
     - [Building and installing on your system](#building-and-installing-on-your-system)
@@ -138,7 +139,7 @@ include(FetchContent)
 
 FetchContent_Declare(isptr
     GIT_REPOSITORY  https://github.com/gershnik/intrusive_shared_ptr.git
-    GIT_TAG         v1.8  #use the tag, branch or sha you need
+    GIT_TAG         v1.9  #use the tag, branch or sha you need
     GIT_SHALLOW     TRUE
 )
 ...
@@ -155,6 +156,10 @@ PRIVATE
 isptr_add_module(mytarget PRIVATE)
 ```
 > ℹ&#xFE0F; _[What is FetchContent?](https://cmake.org/cmake/help/latest/module/FetchContent.html)_
+
+### Conan
+
+Add `intrusive_shared_ptr/1.9` to your conanfile.
 
 ### Vcpkg
 
