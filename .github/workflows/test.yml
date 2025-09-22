@@ -67,7 +67,7 @@ jobs:
             hosts.append({'os': 'windows-latest', 'platform': platform, 'module': True, 'nopython': platform == "Win32", 'jobname': f'Windows - {platform}'})
               
           for arch in win_clang_archs:
-            hosts.append({'os': 'windows-latest', 'arch': arch, 'compiler': 'clang-cl', 'nopython': platform == "x86", 'jobname': f'Windows - clang - {arch}'})
+            hosts.append({'os': 'windows-latest', 'arch': arch, 'compiler': 'clang-cl', 'nopython': arch == "x86", 'jobname': f'Windows - clang - {arch}'})
           
           #gcc hosts
           for gcc, runon in gcc_map.items():
@@ -103,7 +103,6 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Setup Python
-      if: matrix.nopython != 'true'
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
