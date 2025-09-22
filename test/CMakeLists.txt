@@ -87,10 +87,21 @@ foreach(TEST_SUFFIX ${TEST_SUFFIXES})
 
         target_compile_options(${TEST_TARGET_NAME} PRIVATE
             $<$<CXX_COMPILER_ID:MSVC>:/W4;/WX>
-            $<$<CXX_COMPILER_ID:Clang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
             $<$<CXX_COMPILER_ID:AppleClang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
             $<$<CXX_COMPILER_ID:GNU>:-Wall;-Wextra;-pedantic;-Wno-self-move>
         )
+
+        if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
+            target_compile_options(${TEST_TARGET_NAME}
+            PRIVATE
+                $<$<CXX_COMPILER_ID:Clang>:/W4;-Wno-self-assign-overloaded;-Wno-self-move>
+            )
+        else()
+            target_compile_options(${TEST_TARGET_NAME}
+            PRIVATE
+                $<$<CXX_COMPILER_ID:Clang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
+            )
+        endif()
 
         target_compile_definitions(${TEST_TARGET_NAME} PRIVATE
             $<$<BOOL:${ISPTR_ENABLE_PYTHON}>:ISPTR_USE_PYTHON=1>

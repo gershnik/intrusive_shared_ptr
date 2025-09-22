@@ -11,30 +11,92 @@ on:
       - 'tools/**'
 
 jobs:
-  build:
+  define-matrix:
+    runs-on: ubuntu-latest
+
+    outputs:
+      hosts: ${{ steps.matrix.outputs.hosts }}
+      containers: ${{ steps.matrix.outputs.containers }}
+
+    steps:
+      - name: Define Matrix
+        id: matrix
+        shell: python
+        run: |
+          import json
+          import os
+
+          macos_map = {
+            'macos-13': "14.3.1",
+            'macos-14': "15.4",
+            'macos-15': "16.2"
+          }
+
+          win_paltforms = ["x64", "Win32"]
+          win_clang_archs = ["x64", "x86"]
+
+          gcc_map = {
+            11: 'ubuntu-latest', 
+            12: 'ubuntu-latest', 
+            13: 'ubuntu-latest',
+            14: 'ubuntu-24.04'
+          }
+          gcc_cont_map = {
+            15: 'gcc:15.1'
+          }
+          clang_map = {
+            13: 'ubuntu-22.04', 
+            14: 'ubuntu-22.04', 
+            15: 'ubuntu-22.04', 
+            16: 'ubuntu-22.04',
+            17: 'ubuntu-latest', 
+            18: 'ubuntu-latest', 
+            19: 'ubuntu-latest', 
+            20: 'ubuntu-latest'
+          }
+          
+          hosts = []
+          containers=[]
+          
+          #macOS
+          for runon, xcode in macos_map.items():
+            hosts.append({'os': runon, 'version': xcode, 'jobname': f'macOS - Xcode{xcode}'})
+          
+          #windows
+          for platform in win_paltforms:
+            hosts.append({'os': 'windows-latest', 'platform': platform, 'module': true, 'jobname': f'Windows - {platform}'})
+              
+          for arch in win_clang_archs:
+            hosts.append({'os': 'windows-latest', 'arch': arch, 'compiler': 'clang-cl', 'module': false, 'jobname': f'Windows - clang - {arch}'})
+          
+          #gcc hosts
+          for gcc, runon in gcc_map.items():
+            hosts.append({'os': runon, 'compiler': 'gcc', 'version': gcc, 'module': gcc >= 14,
+                          'jobname': f'Linux - GCC{gcc}'})
+
+          #gcc containers
+          for gcc, container in gcc_cont_map.items():
+              containers.append({'container': container, 'module': gcc >= 14,
+                                 'jobname': f'Linux - GCC{gcc}'})
+
+
+          #clang
+          for clang, runon in clang_map.items():
+            hosts.append({'os': runon, 'compiler': 'clang', 'version': clang, 'module': clang >= 18,
+                          'jobname': f'Linux - Clang{clang}'})
+
+          with open(os.environ['GITHUB_OUTPUT'], 'w') as env:
+            print('hosts=' + json.dumps(hosts), file=env) 
+            print('containers=' + json.dumps(containers), file=env)
+
+  standard:
+    needs: define-matrix
+    name: ${{ matrix.jobname }}
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.name }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-        - { os: macos-latest, name: 'macOS latest' }
-        
-        - { os: windows-latest, module: true, name: 'Windows latest' } 
-        
-        - { os: ubuntu-latest, compiler: gcc, version: 11, name: 'GCC 11' }
-        - { os: ubuntu-latest, compiler: gcc, version: 12, name: 'GCC 12' }
-        - { os: ubuntu-latest, compiler: gcc, version: 13, name: 'GCC 13' }
-        - { os: ubuntu-24.04, compiler: gcc, version: 14, module: true, name: 'GCC 14' }
-        
-        - { os: ubuntu-22.04, compiler: clang, version: 13, name: 'Clang 13' }
-        - { os: ubuntu-22.04, compiler: clang ,version: 14, name: 'Clang 14' }
-        - { os: ubuntu-22.04, compiler: clang, version: 15, name: 'Clang 15' }
-        - { os: ubuntu-22.04, compiler: clang, version: 16, name: 'Clang 16' }
-        - { os: ubuntu-latest, compiler: clang, version: 17, name: 'Clang 17' }
-        - { os: ubuntu-latest, compiler: clang, version: 18, module: true, name: 'Clang 13' }
-        - { os: ubuntu-latest, compiler: clang, version: 19, module: true, name: 'Clang 19' }
-        - { os: ubuntu-latest, compiler: clang, version: 20, module: true, name: 'Clang 20' }
+        include: ${{ fromJSON(needs.define-matrix.outputs.hosts) }}
 
     steps:
     - name: Checkout
@@ -74,6 +136,23 @@ jobs:
           echo "CMAKE_GENERATOR=-GNinja" >> $GITHUB_ENV
         fi
 
+        if [[ '${{ matrix.os }}' == macos-* ]]; then
+            echo "DEVELOPER_DIR=/Applications/Xcode_${{ matrix.version }}.app" >> $GITHUB_ENV
+        fi
+
+        if [[ '${{ matrix.os }}' == windows-* ]]; then
+            if [[ '${{ matrix.compiler }}' != '' ]]; then
+                if [[ '${{ matrix.arch }}' == "x64" ]]; then
+                    VCPREFIX="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\Llvm\\x64\\bin"
+                else
+                    VCPREFIX="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\Llvm\\bin"
+                fi
+                echo "CC=$VCPREFIX\\${{ matrix.compiler }}" >> $GITHUB_ENV
+                echo "CXX=$VCPREFIX\\${{ matrix.compiler }}" >> $GITHUB_ENV
+                echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+            fi
+        fi
+
         if [[ '${{ matrix.module}}' == 'true' ]]; then
             echo "CMAKE_ARGS=-DISPTR_ENABLE_MODULE=ON" >> $GITHUB_ENV
         fi
@@ -81,6 +160,9 @@ jobs:
     - name: Configure
       shell: bash
       run: |
+        if [[ '${{ matrix.platform }}' != "" ]]; then
+            export CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_GENERATOR_PLATFORM=${{ matrix.platform }}"
+        fi
         cmake $CMAKE_GENERATOR -S . -B build $CMAKE_ARGS -DISPTR_ENABLE_PYTHON=ON -DCMAKE_BUILD_TYPE=Release 
 
     - name: Build and Test
@@ -89,14 +171,14 @@ jobs:
         cmake --build build --config Release --target run-test
 
   container:
+    needs: define-matrix
+    name: ${{ matrix.jobname }}
     runs-on: ubuntu-latest
-    name: ${{ matrix.name }}
     container: ${{ matrix.container }}
     strategy:
       fail-fast: false
       matrix: 
-        include:
-        - {container: gcc:15.1, module: true, name: 'GCC 15'}
+        include: ${{ fromJSON(needs.define-matrix.outputs.containers) }}
     
     steps:
     - name: Checkout
