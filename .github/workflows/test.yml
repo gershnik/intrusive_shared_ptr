@@ -133,3 +133,28 @@ jobs:
       shell: bash
       run: |
         cmake --build build --config Release --target run-test
+
+  big-endian:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build gcc-powerpc-linux-gnu g++-powerpc-linux-gnu qemu-user-binfmt
+
+    - name: Configure
+      run: |
+        export CC=powerpc-linux-gnu-gcc
+        export CXX=powerpc-linux-gnu-g++
+        export QEMU_LD_PREFIX=/usr/powerpc-linux-gnu/
+        cmake -GNinja -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_PROCESSOR=powerpc
+
+    - name: Build and Test
+      shell: bash
+      run: |
+        export QEMU_LD_PREFIX=/usr/powerpc-linux-gnu/
+        cmake --build build --config Release --target run-test
