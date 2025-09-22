@@ -64,10 +64,10 @@ jobs:
           
           #windows
           for platform in win_paltforms:
-            hosts.append({'os': 'windows-latest', 'platform': platform, 'module': true, 'jobname': f'Windows - {platform}'})
+            hosts.append({'os': 'windows-latest', 'platform': platform, 'module': True, 'jobname': f'Windows - {platform}'})
               
           for arch in win_clang_archs:
-            hosts.append({'os': 'windows-latest', 'arch': arch, 'compiler': 'clang-cl', 'module': false, 'jobname': f'Windows - clang - {arch}'})
+            hosts.append({'os': 'windows-latest', 'arch': arch, 'compiler': 'clang-cl', 'jobname': f'Windows - clang - {arch}'})
           
           #gcc hosts
           for gcc, runon in gcc_map.items():
