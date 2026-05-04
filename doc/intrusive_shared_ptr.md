@@ -18,13 +18,13 @@ Traits must expose two static methods with the following signatures:
 <unspecified> sub_ref(T *) noexcept
 ```
 
-Return value of either method is ignored. The argument is never `nullptr`.
+The return value of either method is ignored. The argument is never `nullptr`.
 
 ### Namespace Types
 
 - `template<class Traits, class T> constexpr bool are_intrusive_shared_traits` checks whether given Traits satisfy the traits requirements above for the given type T.
-- `template<class T> using is_intrusive_shared_ptr = ...` type trait that is `std::true_type` or `std::false_type` depending on whether T is a valid `intrusive_shared_ptr` type.
-- `template<class T> bool constexpr is_intrusive_shared_ptr_v = is_intrusive_shared_ptr<T>::value;`
+- `template<class T> using is_intrusive_shared_ptr = ...` a type trait that is `std::true_type` or `std::false_type` depending on whether T is a valid `intrusive_shared_ptr` type.
+- `template<class T> constexpr bool is_intrusive_shared_ptr_v = is_intrusive_shared_ptr<T>::value;`
 
 
 ### Nested Types
@@ -43,41 +43,41 @@ using traits_type = Traits;
 - Constructor from `nullptr`. Same as above
 - Copy constructor. `noexcept`. Accepts:
   - Objects of the same type and traits
-  - Objects that point to `Y` such as `Y *` is convertible to `T *` using the same or different traits. 
+  - Objects of a type `Y` such that `Y *` is convertible to `T *` using the same or different traits. 
 - Move constructor. `noexcept`. Accepts:
   - Objects of the same type and traits. No changes to reference count are performed.
-  - Objects that point to `Y` such as `Y *` is convertible to `T *` using the same or different traits.
-  If the source and destination traits are the same no changes to source reference count are performed. 
+  - Objects of a type `Y` such that `Y *` is convertible to `T *` using the same or different traits.
+  If the source and destination traits are the same, no changes to source reference count are performed. 
 - Copy assignment. `noexcept`. Accepts:
   - Objects of the same type and traits
-  - Objects that point to `Y` such as `Y *` is convertible to `T *` using the same or different traits. 
+  - Objects of a type `Y` such that `Y *` is convertible to `T *` using the same or different traits. 
 - Move assignment. `noexcept`. Accepts:
   - Objects of the same type and traits 
-  - Objects that point to `Y` such as `Y *` is convertible to `T *` using the same or different traits. 
-  If the source and destination traits are the same no changes to source reference count are performed.
+  - Objects of a type `Y` such that `Y *` is convertible to `T *` using the same or different traits. 
+  If the source and destination traits are the same, no changes to source reference count are performed.
 - Destructor. `noexcept`. Non-virtual.
 
-- `static intrusive_shared_ptr<T, Traits> noref() noexcept` Creates a smart pointer from a raw pointer without modifying the reference count. 
-- `static intrusive_shared_ptr<T, Traits> ref() noexcept` Creates a smart pointer from a raw pointer and increments reference count.
+- `static intrusive_shared_ptr<T, Traits> noref(T *) noexcept` Creates a smart pointer from a raw pointer without modifying the reference count. 
+- `static intrusive_shared_ptr<T, Traits> ref(T *) noexcept` Creates a smart pointer from a raw pointer and increments reference count.
 
 #### Instance methods
 
 - `T * get() const noexcept` Returns the stored pointer. Reference count is not modified.
 - `T * operator->() const noexcept` Returns the stored pointer. Reference count is not modified.
-- `T & operator*() const noexcept` Returns the reference to pointee. Undefined if stored pointer is nullptr
+- `T & operator*() const noexcept` Returns a reference to pointee. Undefined if stored pointer is nullptr.
 - `template<class M> M & operator->*(M T::*memptr) const noexcept` Returns the result of `'stored pointer'->*memptr`
-   This allows access via pointee's pointer to members
-- `explicit operator bool() const noexcept` true if the pointer is non null
+   This allows access via the pointee's pointer to members
+- `explicit operator bool() const noexcept` True if the pointer is non-null.
 - Before C++23: `output_param get_output_param() noexcept` returns a temporary object that exposes `operator T**() && noexcept`. This can
    be passed as an output parameter to C functions that return a reference counted pointer. The destructor of the temporary
    will fill this pointer with the returned result.
-   In C++23 and above use `std::out_ptr` or `std::inout_ptr`instead.
+   In C++23 and above use `std::out_ptr` or `std::inout_ptr` instead.
 - `T * release() noexcept` Releases the stored pointer. The object is set to null and calling code assumes ownership of the
    pointer. No adjustment is made to the reference count.
 - `void reset() noexcept` Clears the stored pointer. The reference count is decremented.
 - `void swap(intrusive_shared_ptr<T, Traits> & other) noexcept` and <br/>
   `friend void swap(intrusive_shared_ptr<T, Traits> & lhs, intrusive_shared_ptr<T, Traits> & rhs) noexcept` (ADL only)
-   Perform swap of pointers of the same type
+   Perform swap of pointers of the same type.
 
 #### Namespace methods
 

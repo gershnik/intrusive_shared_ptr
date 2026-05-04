@@ -1,8 +1,8 @@
 # Intro 
 This is yet another implementation of an intrusive [reference counting](http://en.wikipedia.org/wiki/Reference_counting) 
-[smart pointer](http://en.wikipedia.org/wiki/Smart_pointer), highly configurable reference counted base class and adapters.
+[smart pointer](http://en.wikipedia.org/wiki/Smart_pointer), a highly configurable reference-counted base class and adapters.
 
-The code requires C++17 or above compiler.
+The code requires a C++17 or above compiler.
 
 It is known to work with:<br/>
 Xcode 11 or above<br/>
@@ -10,9 +10,9 @@ Microsoft Visual Studio 2019 or above<br/>
 Clang 8 or above<br/>
 GCC 7.4.0 or above<br/>
 
-It can be used either as a classical header-only library or as C++ module (experimental).
+It can be used either as a classical header-only library or as a C++ module (experimental).
 
-Documentation and formal tests are work in progress.
+Documentation and formal tests are a work in progress.
 
 <!-- TOC depthfrom:2 -->
 
@@ -23,7 +23,7 @@ Documentation and formal tests are work in progress.
     - [Support for operator->*](#support-for-operator-)
     - [Atomic access](#atomic-access)
     - [Trivial ABI](#trivial-abi)
-    - [Correct implementation of a "reference counted base" class](#correct-implementation-of-a-reference-counted-base-class)
+    - [Correct implementation of a "reference-counted base" class](#correct-implementation-of-a-reference-counted-base-class)
     - [Support for weak pointers](#support-for-weak-pointers)
 - [Integration](#integration)
     - [CMake via FetchContent](#cmake-via-fetchcontent)
@@ -42,7 +42,7 @@ Documentation and formal tests are work in progress.
     - [Using with Apple CoreFoundation types](#using-with-apple-corefoundation-types)
     - [Using with Microsoft COM interfaces](#using-with-microsoft-com-interfaces)
     - [Using with Python objects](#using-with-python-objects)
-    - [Using with non-reference counted types](#using-with-non-reference-counted-types)
+    - [Using with non-reference-counted types](#using-with-non-reference-counted-types)
     - [Atomic operations](#atomic-operations)
 - [Constexpr functionality](#constexpr-functionality)
 - [Module support](#module-support)
@@ -51,21 +51,21 @@ Documentation and formal tests are work in progress.
 <!-- /TOC -->
 
 ## Why bother?
-There are multiple other intrusive smart pointers available including one from [Boost](https://www.boost.org/doc/libs/1_71_0/libs/smart_ptr/doc/html/smart_ptr.html#intrusive_ptr)
+There are multiple other intrusive smart pointers available, including one from [Boost](https://www.boost.org/doc/libs/1_71_0/libs/smart_ptr/doc/html/smart_ptr.html#intrusive_ptr),
 and there was even a [proposal](http://open-std.org/JTC1/SC22/WG21/docs/papers/2016/p0468r0.html) 
 to add one to the standard C++ library, so why create another one?
 Unfortunately, as far as I can tell, all existing implementations, and that includes the standard library proposal at the time
-of this writing, suffer from numerous deficiencies that make them hard or annoying to use in real life code. 
-The most serious problems addressed here are as follows
+of this writing, suffer from numerous deficiencies that make them hard or annoying to use in real-life code. 
+The most serious problems addressed here are as follows:
 
 ### Named conversions from raw pointers
 All other libraries offer a conversion in the form 
 `smart_ptr(T * p);`
-In my opinion, this is an extremely bad idea. When looking at a call like `smart_ptr(foo())` can you quickly tell whether this adds a reference count or "attaches" the smart pointer to a raw one? That's right, you cannot! The answer depends 
-on the smart pointer implementation or even on specific traits used. This makes the behavior invisible and hard to predict at the **call site**. It guarantees that someone, somewhere will make a wrong assumption. In my experience, almost all reference counting bugs happen on the **boundary** between code that uses smart and raw pointers where such conversions are abundant. 
-Just like any form of dangerous cast this one has to be **explicit** in calling code. As an aside, ObjectiveC ARC did it right
+In my opinion, this is an extremely bad idea. When looking at a call like `smart_ptr(foo())`, can you quickly tell whether this adds a reference count or "attaches" the smart pointer to a raw one? That's right, you cannot! The answer depends 
+on the smart pointer implementation or even on specific traits used. This makes the behavior invisible and hard to predict at the **call site**. It guarantees that someone, somewhere will make a wrong assumption. In my experience, almost all reference-counting bugs happen on the **boundary** between code that uses smart and raw pointers where such conversions are abundant. 
+Just like any form of dangerous cast, this one has to be **explicit** in calling code. As an aside, Objective-C ARC did it right
 with their explicit and visible `__bridge` casts between raw and smart pointers.
-Note that having a boolean argument (like what Boost and many other implementations do) in constructor isn't a solution.
+Note that having a boolean argument (like what Boost and many other implementations do) in the constructor isn't a solution.
 Can you quickly tell what `smart_ptr(p, true)` does? Is it "true, add reference" or "true, copy it"?
 
 This library uses named functions to perform conversion. You see exactly what is being done at the call site.
@@ -74,60 +74,60 @@ This library uses named functions to perform conversion. You see exactly what is
 
 Many libraries use [ADL](https://en.wikipedia.org/wiki/Argument-dependent_name_lookup) to find "add reference" and 
 "release reference" functions for the underlying type.
-That is, they have expressions like `add_ref(p)` in their implementation, and expect a function named `add_ref` that accepts pointer to the underlying type is supposed to be found via ADL.
-This solution is great in many cases but it breaks when working with some C types like Apple's `CTypeRef`. This one is actually a typedef to `void *` so if you have an `add_ref` that accepts it, you have just made every unrelated `void *` reference counted (with very bad results if you accidentally put a wrong object into a smart pointer).
+That is, they have expressions like `add_ref(p)` in their implementation, and expect a function named `add_ref` that accepts a pointer to the underlying type to be found via ADL.
+This solution is great in many cases but it breaks when working with some C types like Apple's `CTypeRef`. This one is actually a typedef to `void *`, so if you have an `add_ref` that accepts it, you have just made every unrelated `void *` reference-counted (with very bad results if you accidentally put a wrong object into a smart pointer).
 A better way to define how reference counting is done is to pass a traits class to the smart pointer. (The standard library proposal gets this one right).
 
 This library uses traits.
 
 ### Support for output parameters
 
-Often times you need to pass smart pointer as an output parameter to a C function that takes `T **`
+Oftentimes you need to pass a smart pointer as an output parameter to a C function that takes `T **`.
 Many other smart pointers either 
-- ignore this scenario, requiring you to introduce extra raw pointer and unsafe code, or
-- overload `operator&` which is a horrendously bad idea (it breaks lots of generic code which assumes that `&foo` gives
-  an address of foo, not something else)
+- ignore this scenario, requiring you to introduce an extra raw pointer and unsafe code, or
+- overload `operator&`, which is a horrendously bad idea (it breaks lots of generic code which assumes that `&foo` gives
+  an address of foo, not something else).
 The right solution is to have a proxy class convertible to `T **`.
 
-Since C++23 the standard library provides `std::out_ptr` and `std::inout_ptr` to deal with this issue. This library
+Since C++23, the standard library provides `std::out_ptr` and `std::inout_ptr` to deal with this issue. This library
 fully supports those when they are available.
 
-When standard library support is not available, this library also exposes `get_output_param()` and `get_inout_param` 
-methods that return an inner proxy class (which behaves similarly to `std::out_ptr_t`/`std::inout_ptr`) 
+When standard library support is not available, this library also exposes `get_output_param()` and `get_inout_param()` 
+methods that return an inner proxy class (which behaves similarly to `std::out_ptr_t`/`std::inout_ptr`).
 
 ### Support for `operator->*`
 
-This might seem to be a minor thing but is really annoying in generic code. For some reason no smart pointers bother to provide
+This might seem to be a minor thing, but is really annoying in generic code. For some reason, no smart pointers bother to provide
 `operator->*` so that pointers to members could be accessed via the same syntax as for raw pointers. In non-generic code
-you can always work around it via `(*p).*whatever` but in generic code this is not an option.
+you can always work around it via `(*p).*whatever`, but in generic code this is not an option.
 
 ### Atomic access
 
-Sometimes you need to operate on smart pointers atomically. To the best of my knowledge no library currently provides this functionality.
+Sometimes you need to operate on smart pointers atomically. To the best of my knowledge, no library currently provides this functionality.
 
 This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending to it the normal `std::atomic` semantics.
 
 ### Trivial ABI
 
-When built with CLang compiler `intrusive_shared_ptr` is marked with [\[\[clang::trivial_abi\]\]](https://clang.llvm.org/docs/AttributeReference.html#trivial-abi) 
+When built with the Clang compiler, `intrusive_shared_ptr` is marked with the [\[\[clang::trivial_abi\]\]](https://clang.llvm.org/docs/AttributeReference.html#trivial-abi) 
 attribute. A good description of what this attribute does and why it is important
 for performance can be found [here](https://quuxplusone.github.io/blog/2018/05/02/trivial-abi-101/).
-Another take on the performance issue as a comment on standard library proposal can be found 
+Another take on the performance issue as a comment on the standard library proposal can be found 
 [here](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1351r0.html#params).
-[This page](doc/trivial_abi.md) contains details on why this is a good idea and why concerns about order of destruction do not really matter here.
+[This page](doc/trivial_abi.md) contains details on why this is a good idea and why concerns about the order of destruction do not really matter here.
 
-### Correct implementation of a "reference counted base" class
+### Correct implementation of a "reference-counted base" class
 
-This is not directly a problem with smart pointers but with the base classes often provided together with them to implement an
+This is not directly a problem with smart pointers, but with the base classes often provided together with them to implement an
 intrusively counted class. Very often they contain subtle bugs (see 
-['A note on implementing reference counted objects'](doc/reference_counting.md) for more details). It is also tricky to 
+['A note on implementing reference-counted objects'](doc/reference_counting.md) for more details). It is also tricky to 
 create a base class that can work well for different requirements without compromising efficiency.
 
 ### Support for weak pointers
 
 Continuing on the base class theme, when doing intrusive reference counting, supporting (or not) weak pointers is the responsibility 
 of the counted class. Supporting weak pointers also usually involves tradeoffs in terms of performance or memory consumption. 
-This library base class allows user to enable a decent implementation of weak pointers via policy based design. 
+This library's base class allows the user to enable a decent implementation of weak pointers via policy-based design. 
 
 
 ## Integration
@@ -140,7 +140,7 @@ include(FetchContent)
 
 FetchContent_Declare(isptr
     GIT_REPOSITORY  https://github.com/gershnik/intrusive_shared_ptr.git
-    GIT_TAG         v1.9  #use the tag, branch or sha you need
+    GIT_TAG         v1.9  #use the tag, branch or SHA you need
     GIT_SHALLOW     TRUE
 )
 ...
@@ -153,7 +153,7 @@ PRIVATE
   isptr::isptr
 )
 
-#To use C++ module (the second param is the visibilty)
+#To use C++ module (the second param is the visibility)
 isptr_add_module(mytarget PRIVATE)
 ```
 > ℹ&#xFE0F; _[What is FetchContent?](https://cmake.org/cmake/help/latest/module/FetchContent.html)_
@@ -176,7 +176,7 @@ vcpkg add port intrusive-shared-ptr
 
 ### Platform package managers
 
-On Debian based systems `intrusive-shared-ptr` might be available via APT.
+On Debian-based systems `intrusive-shared-ptr` might be available via APT.
 
 You can consult https://pkgs.org/search/?q=libisptr-dev for up-to-date availability information.
 
@@ -191,7 +191,7 @@ apt install libisptr-dev
 You can also build and install this library on your system using CMake.
 
 1. Download or clone this repository into SOME_PATH
-2. On command line:
+2. On the command line:
 ```bash
 cd SOME_PATH
 cmake -S . -B build 
@@ -205,14 +205,14 @@ sudo cmake --install build
 #cmake --install build --prefix /usr
 ```
 
-Once the library has been installed it can be used in the following ways:
+Once the library has been installed, it can be used in the following ways:
 
 #### Basic use 
 
-To use the header files set the include directory to `<prefix>/include` where `<prefix>` 
+To use the header files, set the include directory to `<prefix>/include` where `<prefix>` 
 is the install prefix from above.
 
-To use C++ module (if enabled during the build) include `<prefix>/include/intrusive_shared_ptr/isptr.cppm` 
+To use the C++ module (if enabled during the build), include `<prefix>/include/intrusive_shared_ptr/isptr.cppm` 
 in your build.
 
 
@@ -227,7 +227,7 @@ PRIVATE
   isptr::isptr
 )
 
-#To use C++ module (the second param is the visibilty)
+#To use the C++ module (the second param is the visibility)
 isptr_add_module(mytarget PRIVATE)
 ```
 
@@ -236,28 +236,28 @@ isptr_add_module(mytarget PRIVATE)
 Add the output of `pkg-config --cflags isptr` to your compiler flags.
 
 Note that the default installation prefix `/usr/local` might not be in the list of places your
-`pkg-config` looks into. If so you might need to do:
+`pkg-config` looks into. If so, you might need to do:
 ```bash
 export PKG_CONFIG_PATH=/usr/local/share/pkgconfig
 ```
-before running `pkg-config`
+before running `pkg-config`.
 
 
 ### Copying to your sources
 
-You can also simply download this repository from [Releases](https://github.com/gershnik/intrusive_shared_ptr/releases) page 
+You can also simply download this repository from the [Releases](https://github.com/gershnik/intrusive_shared_ptr/releases) page 
 (named `intrusive_shared_ptr-X.Y.tar.gz`) and unpack it somewhere in your source tree.
 
-To use header files add the `inc` sub-directory to your include path.
+To use header files, add the `inc` sub-directory to your include path.
 
-To use the module add `modules/isptr.cppm` to your build. 
+To use the module, add `modules/isptr.cppm` to your build. 
 
 ## Usage
 
 ### Basics
 
-All the types in this library are declared in `namespace isptr`. For brevity the namespace is omitted below.
-Add `isptr::` prefix to all the type or use `using` declaration in your own code.
+All the types in this library are declared in `namespace isptr`. For brevity, the namespace is omitted below.
+Add the `isptr::` prefix to all the types or use a `using` declaration in your own code.
 
 The header `<intrusive_shared_ptr/intrusive_shared_ptr.h>`/module `isptr` provides a template
 
@@ -266,7 +266,7 @@ template<class T, class Traits>
 class intrusive_shared_ptr<T, Traits>;
 ```
 
-Where `T` is the type of the pointee and `Traits` a class that should provide 2 static functions that look like this
+Where `T` is the type of the pointee and `Traits` is a class that should provide 2 static functions that look like this:
 
 ```cpp
 static void add_ref(SomeType * ptr) noexcept
@@ -279,11 +279,11 @@ static void sub_ref(SomeType * ptr) noexcept
 }
 ```
 
-`SomeType *` should be a pointer type to which `T *` is convertible to. It is possible to make `add_ref` and `sub_ref`
+`SomeType *` should be a pointer type to which `T *` is convertible. It is possible to make `add_ref` and `sub_ref`
 templates, if desired, though this is usually not necessary.
 
 
-To create `intrusive_shared_ptr` from a raw `T *` there are 2 functions:
+To create `intrusive_shared_ptr` from a raw `T *`, there are 2 functions:
 
 ```cpp
 //pass the smart pointer in without changing the reference count
@@ -292,11 +292,11 @@ intrusive_shared_ptr<T, Traits> intrusive_shared_ptr<T, Traits>::noref(T * p) no
 
 //adopt the pointer and bump the reference count
 template<class T, class Traits>
-intrusive_shared_ptr<T, Traits> intrusive_shared_ptr<T, Traits>::ref(T * p) noexcept
+intrusive_shared_ptr<T, Traits> intrusive_shared_ptr<T, Traits>::ref(T * p) noexcept;
 ```
 
-It is possible to use `intrusive_shared_ptr` directly but the name is long and ugly so a better approach is to
-wrap in a typedef and wrapper functions like this
+It is possible to use `intrusive_shared_ptr` directly, but the name is long and ugly, so a better approach is to
+wrap it in a typedef and provide wrapper functions like this:
 
 ```cpp
 struct my_type
@@ -322,9 +322,9 @@ my_ptr<T> my_attach_func(T * ptr) {
 
 ```
 
-The library provides such wrappers for some common scenarios. If you fully control the definition of `my_type` then
-it is possible to simplify things even further with header `refcnt_ptr.h`. It adapts `intrusive_shared_ptr` to traits
-exposed as inner type `refcnt_ptr_traits`. You can use it like this:
+The library provides such wrappers for some common scenarios. If you fully control the definition of `my_type`, then
+it is possible to simplify things even further with the header `refcnt_ptr.h`. It adapts `intrusive_shared_ptr` to traits
+exposed as an inner type `refcnt_ptr_traits`. You can use it like this:
 
 ```cpp
 #include <intrusive_shared_ptr/refcnt_ptr.h>
@@ -342,10 +342,10 @@ struct my_type
   };
 };
 
-//now you can use refcnt_ptr<my_type> for the pointer type and refcnt_attach and refcnt_retain free functions e.g.
+//now you can use refcnt_ptr<my_type> for the pointer type and the refcnt_attach and refcnt_retain free functions
 
 //create from raw pointer (created with count 1)
-foo raw = new my_type();
+my_type * raw = new my_type();
 refcnt_ptr<my_type> p1 = refcnt_attach(raw);
 
 //create directly
@@ -361,7 +361,7 @@ p2 = refcnt_retain(raw);
 
 ### Using provided base classes
 
-To implement `my_type` above the library provides a base class you can inherit from which will do the right thing.
+To implement `my_type` above, the library provides a base class you can inherit from which will do the right thing.
 
 ```cpp
 #include <intrusive_shared_ptr/ref_counted.h>
@@ -395,7 +395,7 @@ refcnt_ptr<foo> p3 = refcnt_retain(raw);
 
 ```
 
-The type of the reference count is `int` by default. If you need to you can customize it. 
+The type of the reference count is `int` by default. If you need to, you can customize it. 
 
 ```cpp
 
@@ -414,7 +414,7 @@ More details can be found in [this document](doc/ref_counted.md)
 
 ### Supporting weak pointers
 
-If you want to support weak pointers you need to tell `ref_counted` about it. Since weak pointers include overhead
+If you want to support weak pointers, you need to tell `ref_counted` about it. Since weak pointers include overhead
 even if you never create one, by default they are disabled.
 
 ```cpp
@@ -448,10 +448,10 @@ More details can be found in [this document](doc/ref_counted.md)
 
 using namespace isptr;
 
-//Use auto in real code. Type is spelled out for clarity
-cf_ptr<CStringRef> str = cf_attach(CFStringCreateWithCString(nullptr, 
-                                                             "Hello", 
-                                                             kCFStringEncodingUTF8));
+//Use auto in real code. The type is spelled out for clarity
+cf_ptr<CFStringRef> str = cf_attach(CFStringCreateWithCString(nullptr, 
+                                                              "Hello", 
+                                                              kCFStringEncodingUTF8));
 std::cout << CFStringGetLength(str.get());
 
 CFArrayRef raw = ...;
@@ -493,11 +493,12 @@ std::cout << PyUnicode_GetLength(str.get());
 
 ```
 
-### Using with non-reference counted types
+### Using with non-reference-counted types
 
-On occasion when you have a code that uses intrusive reference counting a lot you might need to handle a type
-which you cannot modify and which is not by itself reference counted. 
-In such situation you can use an adapter (if you prefer derivation) or wrapper (if you prefer containment) that makes it such
+On occasion, when you have code that uses intrusive reference counting a lot, you might need to handle a type
+which you cannot modify and which is not by itself reference-counted. 
+In such a situation you can use an adapter (if you prefer derivation) or wrapper (if you prefer containment) that 
+adds reference counting to a type:
 
 Adapter:
 ```cpp
@@ -505,18 +506,18 @@ Adapter:
 //Or, if using modules:
 //import isptr;
 
-using counted_map = ref_counted_adapter<std::map<string, int>>;
+using counted_map = ref_counted_adapter<std::map<std::string, int>>;
 
 auto ptr = make_refcnt<counted_map>();
 (*ptr)["abc"] = 7;
 std::cout << ptr->size();
 
-using weakly_counted_map = weak_ref_counted_adapter<std::map<string, int>>;
+using weakly_counted_map = weak_ref_counted_adapter<std::map<std::string, int>>;
 
 auto ptr1 = make_refcnt<weakly_counted_map>();
 (*ptr1)["abc"] = 7;
 std::cout << ptr1->size();
-foo::weak_ptr w1 = p1->get_weak_ptr();
+weakly_counted_map::weak_ptr w1 = ptr1->get_weak_ptr();
 refcnt_ptr<weakly_counted_map> p2 = w1->lock();
 ```
 
@@ -526,18 +527,18 @@ Wrapper:
 //Or, if using modules:
 //import isptr;
 
-using counted_map = ref_counted_wrapper<std::map<string, int>>;
+using counted_map = ref_counted_wrapper<std::map<std::string, int>>;
 
 auto ptr = make_refcnt<counted_map>();
 ptr->wrapped()["abc"] = 7;
 std::cout << ptr->wrapped().size();
 
-using weakly_counted_map = weak_ref_counted_wrapper<std::map<string, int>>;
+using weakly_counted_map = weak_ref_counted_wrapper<std::map<std::string, int>>;
 
 auto ptr1 = make_refcnt<weakly_counted_map>();
 ptr1->wrapped()["abc"] = 7;
 std::cout << ptr1->wrapped().size();
-foo::weak_ptr w1 = p1->get_weak_ptr();
+weakly_counted_map::weak_ptr w1 = ptr1->get_weak_ptr();
 refcnt_ptr<weakly_counted_map> p2 = w1->lock();
 ```
 
@@ -579,7 +580,7 @@ my_ptr ptr1 = aptr.exchange(ptr);
 
 ## Constexpr functionality
 
-When built with C++20 compiler `intrusive_shared_ptr` is fully constexpr capable. You can do things like
+When built with a C++20 compiler, `intrusive_shared_ptr` is fully constexpr capable. You can do things like
 
 ```cpp
 
@@ -589,18 +590,18 @@ constexpr my_ptr foo;
 
 ```
 
-Due to non-default destructors this functionality is not available on C++17
+Due to non-default destructors, this functionality is not available on C++17.
 
 ## Module support
 
-Since version 1.5 this library support being used as a C++ module. 
+Since version 1.5, this library supports being used as a C++ module. 
 This mode is currently **experimental**. Please report bugs if you encounter any issues.
 
-In order to use C++ modules you need a compiler that supports them. 
-Currently CLang >= 16 and MSVC toolset >= 14.34 are definitely known to work. 
+In order to use C++ modules, you need a compiler that supports them. 
+Currently Clang >= 16 and MSVC toolset >= 14.34 are definitely known to work. 
 Other compilers/versions may or may not work.
 
-If using CMake follow the requirements at [cmake-cxxmodules](https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html). 
+If using CMake, follow the requirements at [cmake-cxxmodules](https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html). 
 
 The library consists of a single module file at [modules/isptr.cppm](modules/isptr.cppm). 
 This file is auto-generated from all the library headers. Include it in your build.
