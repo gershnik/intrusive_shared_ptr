@@ -530,14 +530,14 @@ Wrapper:
 using counted_map = ref_counted_wrapper<std::map<std::string, int>>;
 
 auto ptr = make_refcnt<counted_map>();
-ptr->wrapped()["abc"] = 7;
-std::cout << ptr->wrapped().size();
+ptr->wrapped["abc"] = 7;
+std::cout << ptr->wrapped.size();
 
 using weakly_counted_map = weak_ref_counted_wrapper<std::map<std::string, int>>;
 
 auto ptr1 = make_refcnt<weakly_counted_map>();
-ptr1->wrapped()["abc"] = 7;
-std::cout << ptr1->wrapped().size();
+ptr1->wrapped["abc"] = 7;
+std::cout << ptr1->wrapped.size();
 weakly_counted_map::weak_ptr w1 = ptr1->get_weak_ptr();
 refcnt_ptr<weakly_counted_map> p2 = w1->lock();
 ```
