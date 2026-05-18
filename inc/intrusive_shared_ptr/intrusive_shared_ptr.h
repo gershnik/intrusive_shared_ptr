@@ -373,14 +373,14 @@ namespace isptr
     ISPTR_EXPORTED
     template<class Dest, class Src, class Traits>
     inline constexpr
-    std::enable_if_t<is_intrusive_shared_ptr_v<Dest>,
+    std::enable_if_t<is_intrusive_shared_ptr_v<Dest> && std::is_same_v<typename Dest::traits_type, Traits>,
     Dest> intrusive_const_cast(intrusive_shared_ptr<Src, Traits> p) noexcept
         { return Dest::noref(const_cast<typename Dest::pointer>(p.release())); }
 
     ISPTR_EXPORTED
     template<class Dest, class Src, class Traits>
     inline constexpr
-    std::enable_if_t<is_intrusive_shared_ptr_v<Dest>,
+    std::enable_if_t<is_intrusive_shared_ptr_v<Dest> && std::is_same_v<typename Dest::traits_type, Traits>,
     Dest> intrusive_dynamic_cast(intrusive_shared_ptr<Src, Traits> p) noexcept
     {
         auto res = dynamic_cast<typename Dest::pointer>(p.get());
@@ -395,7 +395,7 @@ namespace isptr
     ISPTR_EXPORTED
     template<class Dest, class Src, class Traits>
     inline constexpr
-    std::enable_if_t<is_intrusive_shared_ptr_v<Dest>,
+    std::enable_if_t<is_intrusive_shared_ptr_v<Dest> && std::is_same_v<typename Dest::traits_type, Traits>,
     Dest> intrusive_static_cast(intrusive_shared_ptr<Src, Traits> p) noexcept
         { return Dest::noref(static_cast<typename Dest::pointer>(p.release())); }
 }
