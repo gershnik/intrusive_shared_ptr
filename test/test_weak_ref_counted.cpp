@@ -222,6 +222,14 @@ TEST_CASE( "Weak ref counted works" ) {
         strong1 = weak->lock();
         CHECK(!strong1);
     }
+
+    SUBCASE( "Nulls" ) {
+        refcnt_ptr<wrapped_counted> strong;
+        auto weak = weak_cast(strong);
+        CHECK(!weak);
+        strong = strong_cast(weak);
+        CHECK(!strong);
+    }
 }
 
 }

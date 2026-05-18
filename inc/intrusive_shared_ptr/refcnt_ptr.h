@@ -40,28 +40,28 @@ namespace isptr
     template<class T>
     inline
     refcnt_ptr<typename T::weak_value_type> weak_cast(const refcnt_ptr<T> & src) {
-        return src->get_weak_ptr();
+        return src ? src->get_weak_ptr() : refcnt_ptr<typename T::weak_value_type>{};
     }
 
     ISPTR_EXPORTED
     template<class T>
     inline
     refcnt_ptr<const typename T::weak_value_type> weak_cast(const refcnt_ptr<const T> & src) {
-        return src->get_weak_ptr();
+        return src ? src->get_weak_ptr() : refcnt_ptr<const typename T::weak_value_type>{};
     }
 
     ISPTR_EXPORTED
     template<class T>
     inline
     refcnt_ptr<typename T::strong_value_type> strong_cast(const refcnt_ptr<T> & src) noexcept {
-        return src->lock();
+        return src ? src->lock() : refcnt_ptr<typename T::strong_value_type>{};
     }
 
     ISPTR_EXPORTED
     template<class T>
     inline
     refcnt_ptr<const typename T::strong_value_type> strong_cast(const refcnt_ptr<const T> & src) noexcept {
-        return src->lock();
+        return src ? src->lock() : refcnt_ptr<const typename T::strong_value_type>{};
     }
 }
 
