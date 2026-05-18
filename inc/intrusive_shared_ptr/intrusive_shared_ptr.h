@@ -215,8 +215,9 @@ namespace isptr
         ISPTR_ALWAYS_INLINE //GCC refuses to inline this otherwise
         constexpr void reset() noexcept
         { 
-            this->do_sub_ref(this->m_p);
+            T * temp = this->m_p;
             this->m_p = nullptr;
+            this->do_sub_ref(temp);
         }
         
         constexpr void swap(intrusive_shared_ptr<T, Traits> & other) noexcept
