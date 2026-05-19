@@ -20,24 +20,26 @@ if(ISPTR_ENABLE_PYTHON AND NOT Python3_Development_FOUND)
 endif()
 
 
-set (TEST_SUFFIXES
-    17
-    20
-    23
-)
+foreach(STANDARD 17 20 23 26)
+    if(cxx_std_${STANDARD} IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+        list(APPEND TEST_STANDARDS ${STANDARD})
+    endif()
+endforeach()
 
-set(CXX_STANDARD_17 17)
-set(CXX_STANDARD_20 20)
-set(CXX_STANDARD_23 23)
 
-set(TEST_VARIANTS_17 "headers")
-set(TEST_VARIANTS_20 "headers")
-set(TEST_VARIANTS_23 "headers")
+foreach(TEST_STANDARD ${TEST_STANDARDS})
+    set(CXX_STANDARD_${TEST_STANDARD} ${TEST_STANDARD})
+    set(TEST_VARIANTS_${TEST_STANDARD} "headers")
+endforeach()
+
 
 if (${ISPTR_ENABLE_MODULE})
     if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.28")
-        list(APPEND TEST_VARIANTS_20 "module")
-        list(APPEND TEST_VARIANTS_23 "module")
+        foreach(TEST_STANDARD ${TEST_STANDARDS})
+            if (TEST_STANDARD GREATER_EQUAL 20)
+                list(APPEND TEST_VARIANTS_${TEST_STANDARD} "module")
+            endif()
+        endforeach()
     else()
         message(WARNING "CMake version ${CMAKE_VERSION} doesn't support modules, ignoring ISPTR_ENABLE_MODULE")
     endif()
@@ -45,16 +47,16 @@ endif()
 
 set(TEST_COMMAND "")
 
-foreach(TEST_SUFFIX ${TEST_SUFFIXES})
+foreach(TEST_STANDARD ${TEST_STANDARDS})
 
-    foreach(TEST_VARIANT ${TEST_VARIANTS_${TEST_SUFFIX}})
+    foreach(TEST_VARIANT ${TEST_VARIANTS_${TEST_STANDARD}})
 
-        set(TEST_TARGET_NAME test-${TEST_SUFFIX}-${TEST_VARIANT})
+        set(TEST_TARGET_NAME test-${TEST_STANDARD}-${TEST_VARIANT})
 
         add_executable(${TEST_TARGET_NAME} EXCLUDE_FROM_ALL)
 
         set_target_properties(${TEST_TARGET_NAME} PROPERTIES
-            CXX_STANDARD ${CXX_STANDARD_${TEST_SUFFIX}}
+            CXX_STANDARD ${CXX_STANDARD_${TEST_STANDARD}}
             CXX_STANDARD_REQUIRED OFF
             CXX_EXTENSIONS OFF
             CXX_VISIBILITY_PRESET hidden
