@@ -23,7 +23,7 @@ TEST_CASE( "Atomic type traits are correct" ) {
 
     SUBCASE("Construction, destruction and assignment") {
 
-        CHECK( sizeof(ptr) == sizeof(std::atomic<instrumented_counted<> *>) );
+        CHECK( 2 * sizeof(ptr) >= sizeof(std::atomic<instrumented_counted<> *>) );
         CHECK( std::alignment_of_v<ptr> == std::alignment_of_v<std::atomic<instrumented_counted<> *>> );
 
         CHECK( std::is_default_constructible_v<ptr> );

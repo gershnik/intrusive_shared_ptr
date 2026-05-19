@@ -60,8 +60,28 @@
 
 #endif
 
+#if defined(_MSC_VER) && !defined(__clang__)
+    #include <intrin.h>
+    #include <emmintrin.h>
 
-#ifdef _MSC_VER
+    #if defined(_M_X64) || defined(_M_IX86)
+        #define ISPTR_THREAD_YIELD _mm_pause()
+    #elif defined(_M_ARM64) || defined(_M_ARM)
+        #define ISPTR_THREAD_YIELD __yield()
+    #endif
+
+#elif defined(__clang__) || defined(__GNUC__)
+
+    #if defined(__x86_64__) || defined(__i386__)
+        #define ISPTR_THREAD_YIELD __builtin_ia32_pause()
+    #elif defined(__aarch64__) || defined(__arm__)
+        #define ISPTR_THREAD_YIELD  asm volatile("yield" ::: "memory")
+    #endif
+
+#endif
+
+
+#if defined(_MSC_VER) && !defined(__clang__)
 
     #define ISPTR_ALWAYS_INLINE __forceinline
     #define ISPTR_TRIVIAL_ABI

@@ -52,7 +52,21 @@ SPECIAL_HEADERS = {
 #if __has_include(<Python.h>)
     ##INCLUDE##
 #endif
-'''.lstrip()
+'''.lstrip(),
+
+    'intrin.h':
+'''
+#if defined(_MSC_VER) && !defined(__clang__)
+    ##INCLUDE##
+#endif
+'''.lstrip(),
+
+    'emmintrin.h':
+'''
+#if defined(_MSC_VER) && !defined(__clang__)
+    ##INCLUDE##
+#endif
+'''.lstrip(),
 }
 
 

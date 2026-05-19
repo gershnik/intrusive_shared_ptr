@@ -24,9 +24,17 @@ module;
 #include <atomic>
 #include <cassert>
 #include <compare>
+#if defined(_MSC_VER) && !defined(__clang__)
+    #include <emmintrin.h>
+#endif
+
 #if __has_include(<format>)
     #include <format>
 #endif
+#if defined(_MSC_VER) && !defined(__clang__)
+    #include <intrin.h>
+#endif
+
 #include <limits>
 #include <memory>
 #include <ostream>
@@ -93,8 +101,26 @@ export module isptr;
 
 #endif
 
+#if defined(_MSC_VER) && !defined(__clang__)
 
-#ifdef _MSC_VER
+    #if defined(_M_X64) || defined(_M_IX86)
+        #define ISPTR_THREAD_YIELD _mm_pause()
+    #elif defined(_M_ARM64) || defined(_M_ARM)
+        #define ISPTR_THREAD_YIELD __yield()
+    #endif
+
+#elif defined(__clang__) || defined(__GNUC__)
+
+    #if defined(__x86_64__) || defined(__i386__)
+        #define ISPTR_THREAD_YIELD __builtin_ia32_pause()
+    #elif defined(__aarch64__) || defined(__arm__)
+        #define ISPTR_THREAD_YIELD  asm volatile("yield" ::: "memory")
+    #endif
+
+#endif
+
+
+#if defined(_MSC_VER) && !defined(__clang__)
 
     #define ISPTR_ALWAYS_INLINE __forceinline
     #define ISPTR_TRIVIAL_ABI
@@ -511,6 +537,42 @@ namespace isptr
         { return Dest::noref(static_cast<typename Dest::pointer>(p.release())); }
 }
 
+namespace isptr 
+{
+    namespace internal
+    {
+        class simple_lock {
+        public:
+            void lock() noexcept 
+            {
+                for ( ; ; ) {
+                    
+                    while (m_value.load(std::memory_order_relaxed)) 
+                        yield();
+                    
+                    unsigned current = 0;
+                    if (m_value.compare_exchange_strong(current, 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        return;
+                
+                    yield();
+                }
+            }
+
+            void unlock() noexcept 
+                { m_value.store(0, std::memory_order_release); }
+
+        private:
+            static void yield() noexcept {
+                #ifdef ISPTR_THREAD_YIELD
+                    ISPTR_THREAD_YIELD;
+                #endif
+            }
+        private:
+            std::atomic<unsigned> m_value{0};
+        };
+    }
+}
+
 namespace std
 {
     template<class Traits, class T>
@@ -519,95 +581,82 @@ namespace std
     public:
         using value_type = ::isptr::intrusive_shared_ptr<T, Traits>;
     public:
-        static constexpr bool is_always_lock_free = std::atomic<T *>::is_always_lock_free;
+        static constexpr bool is_always_lock_free = false;
 
         constexpr atomic() noexcept = default;
         atomic(value_type desired) noexcept : m_p(desired.m_p)
             { desired.m_p = nullptr; }
         
         atomic(const atomic&) = delete;
-        void operator=(const atomic&) = delete;
+        atomic & operator=(const atomic&) = delete;
         
         ~atomic() noexcept
-            { value_type::do_sub_ref(this->m_p.load(memory_order_acquire)); }
+            { value_type::do_sub_ref(this->m_p); }
 
-        void operator=(value_type desired) noexcept
-            { this->store(std::move(desired)); }
+        value_type operator=(value_type desired) noexcept
+        { 
+            this->store(desired);
+            return desired; 
+        }
 
         operator value_type() const noexcept
             { return this->load(); }
 
-        value_type load(memory_order order = memory_order_seq_cst) const noexcept
+        value_type load(memory_order /*order*/ = memory_order_seq_cst) const noexcept
         {
-            T * ret = this->m_p.load(order);
-            return value_type::ref(ret);
+            this->m_lock.lock();
+            auto ret = value_type::ref(this->m_p);
+            this->m_lock.unlock();
+            return ret;
         }
 
-        void store(value_type desired, memory_order order = memory_order_seq_cst) noexcept
-            { exchange(std::move(desired), order); }
+        void store(value_type desired, memory_order /*order*/ = memory_order_seq_cst) noexcept
+        { 
+            this->m_lock.lock();
+            std::swap(this->m_p, desired.m_p);
+            this->m_lock.unlock();
+        }
         
-        value_type exchange(value_type desired, memory_order order = memory_order_seq_cst) noexcept
+        value_type exchange(value_type desired, memory_order /*order*/ = memory_order_seq_cst) noexcept
         {
-            T * ret = this->m_p.exchange(desired.m_p, order);
-            desired.m_p = nullptr;
-            return value_type::noref(ret);
+            this->m_lock.lock();
+            std::swap(this->m_p, desired.m_p);
+            this->m_lock.unlock();
+            return desired;
         }
 
-        bool compare_exchange_strong(value_type & expected, value_type desired, memory_order success, memory_order failure) noexcept
-        {
-            T * saved_expected = expected.m_p;
+        bool compare_exchange_strong(value_type & expected, value_type desired, memory_order /*success*/, memory_order /*failure*/) noexcept
+            { return this->do_compare_exchange(expected, std::move(desired)); }
 
-            bool ret = this->m_p.compare_exchange_strong(expected.m_p, desired.m_p, success, failure);
-            return post_compare_exchange(ret, saved_expected, expected, desired);
-        }
-        bool compare_exchange_strong(value_type & expected, value_type desired, memory_order order = memory_order_seq_cst) noexcept
-        {
-            T * saved_expected = expected.m_p;
+        bool compare_exchange_strong(value_type & expected, value_type desired, memory_order /*order*/ = memory_order_seq_cst) noexcept
+            { return this->do_compare_exchange(expected, std::move(desired)); }
 
-            bool ret = this->m_p.compare_exchange_strong(expected.m_p, desired.m_p, order);
-            return post_compare_exchange(ret, saved_expected, expected, desired);
-        }
-
-        bool compare_exchange_weak(value_type & expected, value_type desired, memory_order success, memory_order failure) noexcept
-        {
-            T * saved_expected = expected.m_p;
-
-            bool ret = this->m_p.compare_exchange_weak(expected.m_p, desired.m_p, success, failure);
-            return post_compare_exchange(ret, saved_expected, expected, desired);
-        }
-        bool compare_exchange_weak(value_type & expected, value_type desired, memory_order order = memory_order_seq_cst) noexcept
-        {
-            T * saved_expected = expected.m_p;
-
-            bool ret = this->m_p.compare_exchange_weak(expected.m_p, desired.m_p, order);
-            return post_compare_exchange(ret, saved_expected, expected, desired);
-        }
+        bool compare_exchange_weak(value_type & expected, value_type desired, memory_order /*success*/, memory_order /*failure*/) noexcept
+            { return this->do_compare_exchange(expected, std::move(desired)); }
+        bool compare_exchange_weak(value_type & expected, value_type desired, memory_order /*order*/ = memory_order_seq_cst) noexcept
+            { return this->do_compare_exchange(expected, std::move(desired)); }
 
 
         bool is_lock_free() const noexcept
-            { return this->m_p.is_lock_free(); }
+            { return false; }
         
     private:
-        static bool post_compare_exchange(bool exchange_result, T * saved_expected, 
-                                          value_type & expected, value_type & desired) noexcept
+        bool do_compare_exchange(value_type & expected, value_type && desired) noexcept
         {
-            if (exchange_result)
-            {
-                //success: we are desired and expected is unchanged
-                desired.m_p = nullptr;
-                //saved_expected is equal to our original value which we need to sub_ref
-                value_type::do_sub_ref(saved_expected); 
+            this->m_lock.lock();
+            if (this->m_p == expected.m_p) {
+                std::swap(this->m_p, desired.m_p);
+                this->m_lock.unlock();
+                return true;
+            } else {
+                expected = value_type::ref(this->m_p);
+                this->m_lock.unlock();
+                return false;
             }
-            else
-            {
-                //failure: expected is us and desired is unchanged. 
-                value_type::do_add_ref(expected.m_p); //our value going out
-                value_type::do_sub_ref(saved_expected); //old expected
-            }
-            return exchange_result;
         }
     private:
-        std::atomic<T *> m_p = nullptr;
+        mutable isptr::internal::simple_lock m_lock;
+        T * m_p = nullptr;
     };
 
 #if ISPTR_SUPPORT_OUT_PTR

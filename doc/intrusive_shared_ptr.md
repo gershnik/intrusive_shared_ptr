@@ -108,9 +108,9 @@ Provides the standard set of `std::atomic` functionality:
 - `constexpr atomic() noexcept`. Initializes with null pointer.
 - `atomic(value_type desired) noexcept`
 - `atomic(const atomic&) = delete` Deleted!
-- `void operator=(const atomic&) = delete` Deleted!
+- `atomic & operator=(const atomic&) = delete` Deleted!
 - `~atomic() noexcept`
-- `void operator=(value_type desired) noexcept`
+- `value_type operator=(value_type desired) noexcept`
 - `operator value_type() const noexcept`
 - `value_type load(memory_order order = memory_order_seq_cst) const noexcept`
 - `void store(value_type desired, memory_order order = memory_order_seq_cst) noexcept`
