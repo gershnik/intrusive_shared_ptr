@@ -140,7 +140,7 @@ include(FetchContent)
 
 FetchContent_Declare(isptr
     GIT_REPOSITORY  https://github.com/gershnik/intrusive_shared_ptr.git
-    GIT_TAG         v1.9  #use the tag, branch or SHA you need
+    GIT_TAG         v1.10  #use the tag, branch or SHA you need
     GIT_SHALLOW     TRUE
 )
 ...
@@ -160,7 +160,7 @@ isptr_add_module(mytarget PRIVATE)
 
 ### Conan
 
-Add `intrusive_shared_ptr/1.9` to your conanfile.
+Add `intrusive_shared_ptr/1.10` to your conanfile.
 
 ### Vcpkg
 

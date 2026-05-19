@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [1.10] - 2026-05-19
+
 ### Fixed
 - It is no longer possible to observe an `intrusive_shared_ptr` in an incosistent state while
   the `reset()` method runs. Previously, this could happen in code that is invoked from a destructor of 
@@ -113,3 +115,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [1.7]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.7
 [1.8]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.8
 [1.9]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.9
+[1.10]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.10
