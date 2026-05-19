@@ -27,22 +27,23 @@ jobs:
           import os
 
           macos_map = {
-            'macos-13': "14.3.1",
-            'macos-14': "15.4",
-            'macos-15': "16.2"
+            "15.4": 'macos-14',
+            "16.4": 'macos-15',
+            "26.3": 'macos-15',
           }
 
           win_paltforms = ["x64", "Win32"]
           win_clang_archs = ["x64", "x86"]
 
           gcc_map = {
-            11: 'ubuntu-latest', 
-            12: 'ubuntu-latest', 
-            13: 'ubuntu-latest',
-            14: 'ubuntu-24.04'
+            11: 'ubuntu-22.04', 
           }
           gcc_cont_map = {
-            15: 'gcc:15.1'
+            12: 'gcc:12.5', 
+            13: 'gcc:13.4',
+            14: 'gcc:14.3', 
+            15: 'gcc:15.2',
+            16: 'gcc:16.1'
           }
           clang_map = {
             13: 'ubuntu-22.04', 
@@ -53,14 +54,15 @@ jobs:
             18: 'ubuntu-latest', 
             19: 'ubuntu-latest', 
             20: 'ubuntu-latest',
-            21: 'ubuntu-latest'
+            21: 'ubuntu-latest',
+            22: 'ubuntu-latest'
           }
           
           hosts = []
           containers=[]
           
           #macOS
-          for runon, xcode in macos_map.items():
+          for xcode, runon in macos_map.items():
             hosts.append({'os': runon, 'version': xcode, 'jobname': f'macOS - Xcode{xcode}'})
           
           #windows
@@ -101,10 +103,10 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.12"
 
@@ -193,7 +195,7 @@ jobs:
     
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: System Setup
       shell: bash
@@ -232,7 +234,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup
       run: |
