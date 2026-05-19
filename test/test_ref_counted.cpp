@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include <thread>
 
 #if ISPTR_USE_MODULES
     import isptr;
@@ -177,6 +178,44 @@ TEST_CASE( "Ref counted wrapper" ) {
         auto p1 = refcnt_attach(new ref_counted_wrapper<std::vector<char>>(5));
         CHECK( p1->wrapped.size() == 5 );
     }
+}
+
+TEST_CASE( "Atomic") {
+
+    struct Foo : public ref_counted<Foo> {
+        int x;
+        Foo(int v) : x(v) {}
+    };
+
+    constexpr int N_THREADS = 8;
+    constexpr int N_OPS = 100000;
+    std::atomic<refcnt_ptr<Foo>> shared(make_refcnt<Foo>(0));
+ 
+    std::vector<std::thread> threads;
+    std::atomic<int> errors{0};
+ 
+    for (int i = 0; i < N_THREADS; ++i) {
+        threads.emplace_back([&shared, i, &errors]{
+            for (int j = 0; j < N_OPS; ++j) {
+                if ((j & 1) == 0) {
+                    auto v = shared.load();
+                    if (v && v->x < 0) errors.fetch_add(1);
+                } else {
+                    shared.store(make_refcnt<Foo>(i * N_OPS + j));
+                }
+            }
+        });
+    }
+    for (auto& t : threads) t.join();
+    CHECK(errors.load() == 0);
+    auto val = shared.load()->x;
+    INFO(val);
+    auto i = val / N_OPS;
+    CHECK(i >= 0);
+    CHECK(i < N_THREADS);
+    auto j = val % N_OPS;
+    CHECK(j >= 0);
+    CHECK(j < N_OPS);
 }
 
 }
