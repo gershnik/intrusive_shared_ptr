@@ -5,9 +5,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Fixed
+- It is no longer possible to observe an `intrusive_shared_ptr` in an incosistent state while
+  the `reset()` method runs. Previously this could happen in code that is invoked from a destructor of 
+  the pointed object.
+- `strong_cast` and `weak_cast` now allow null pointers as input as they should've done from the beginning.
+- `intrusive_xxx_cast`s no longer erroneously allow input with different traits from the destination.
+- `std::atomic<intrusive_shared_ptr>` now actually works properly. It was broken due to various ABA problems
+  before.
+- `std::atomic<intrusive_shared_ptr>::operator=` now returns `value_type` insted of `void` as is required by the
+  standard.
+
+### Changed
+- `is_lock_free()` and `is_always_lock_free` for `std::atomic<intrusive_shared_ptr>` now return `false`. 
+- Size of `std::atomic<intrusive_shared_ptr>` is now greater than `sizeof(T *)` and less or equal to `2 * sizeof(T *)`
+
 ## [1.9] - 2025-05-11
 
-## Fixed
+### Fixed
 - Restored support for pre-3.28 CMake. Module functionality will not be available under those
 - GCC15 error (declaration of partial specialization in unbraced export-declaration) when using module 
 
