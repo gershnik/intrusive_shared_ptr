@@ -50,7 +50,7 @@ jobs:
             14: 'ubuntu-22.04', 
             15: 'ubuntu-22.04', 
             16: 'ubuntu-22.04',
-            17: 'ubuntu-latest', 
+            17: 'ubuntu-22.04', 
             18: 'ubuntu-latest', 
             19: 'ubuntu-latest', 
             20: 'ubuntu-latest',
@@ -74,12 +74,12 @@ jobs:
           
           #gcc hosts
           for gcc, runon in gcc_map.items():
-            hosts.append({'os': runon, 'compiler': 'gcc', 'version': gcc, 'module': gcc >= 14,
+            hosts.append({'os': runon, 'compiler': 'gcc', 'version': gcc, 'module': gcc > 14,
                           'jobname': f'Linux - GCC{gcc}'})
 
           #gcc containers
           for gcc, container in gcc_cont_map.items():
-              containers.append({'container': container, 'module': gcc >= 14,
+              containers.append({'container': container, 'module': gcc > 14,
                                  'jobname': f'Linux - GCC{gcc}'})
 
 

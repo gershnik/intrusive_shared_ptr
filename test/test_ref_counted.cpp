@@ -187,8 +187,8 @@ TEST_CASE( "Atomic") {
         Foo(int v) : x(v) {}
     };
 
-    constexpr int N_THREADS = 8;
-    constexpr int N_OPS = 100000;
+    static constexpr int N_THREADS = 8;
+    static constexpr int N_OPS = 100000;
     std::atomic<refcnt_ptr<Foo>> shared(make_refcnt<Foo>(0));
  
     std::vector<std::thread> threads;
