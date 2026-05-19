@@ -7,18 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - It is no longer possible to observe an `intrusive_shared_ptr` in an incosistent state while
-  the `reset()` method runs. Previously this could happen in code that is invoked from a destructor of 
+  the `reset()` method runs. Previously, this could happen in code that is invoked from a destructor of 
   the pointed object.
-- `strong_cast` and `weak_cast` now allow null pointers as input as they should've done from the beginning.
-- `intrusive_xxx_cast`s no longer erroneously allow input with different traits from the destination.
-- `std::atomic<intrusive_shared_ptr>` now actually works properly. It was broken due to various ABA problems
-  before.
+- `intrusive_xxx_cast`s no longer erroneously allow arguments with different traits from the destination.
+- `std::atomic<intrusive_shared_ptr>` now actually works properly. It was broken before due to various ABA problems.
 - `std::atomic<intrusive_shared_ptr>::operator=` now returns `value_type` insted of `void` as is required by the
   standard.
 
 ### Changed
-- `is_lock_free()` and `is_always_lock_free` for `std::atomic<intrusive_shared_ptr>` now return `false`. 
-- Size of `std::atomic<intrusive_shared_ptr>` is now greater than `sizeof(T *)` and less or equal to `2 * sizeof(T *)`
+- The trivial ABI is now used for Clang on Windows too.
+- `strong_cast` and `weak_cast` now allow null pointers as their input as they should've done from the beginning.
+- `is_lock_free()` and `is_always_lock_free` for the `std::atomic<intrusive_shared_ptr>` now return `false`. 
+- Size of an `std::atomic<intrusive_shared_ptr>` is now greater than `sizeof(T *)` and 
+  less or equal to `2 * sizeof(T *)`
 
 ## [1.9] - 2025-05-11
 
