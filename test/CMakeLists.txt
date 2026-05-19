@@ -8,7 +8,7 @@ endif()
 include(FetchContent)
 
 FetchContent_Declare(doctest
-    URL  https://raw.githubusercontent.com/doctest/doctest/v2.4.11/doctest/doctest.h
+    URL  https://raw.githubusercontent.com/doctest/doctest/v2.5.2/doctest/doctest.h
     DOWNLOAD_NO_EXTRACT TRUE
     SOURCE_DIR downloaded/doctest
 )
