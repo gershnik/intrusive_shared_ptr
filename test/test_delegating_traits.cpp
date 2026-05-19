@@ -133,8 +133,8 @@ namespace
         {
             static const outer * real_from_delegating(const int * pinner) noexcept
             {
-                outer * dummy = nullptr;
-                size_t distance = (uintptr_t)&(dummy->_inner) - (uintptr_t)dummy;
+                outer dummy;
+                size_t distance = (uintptr_t)&(dummy._inner) - (uintptr_t)&dummy;
                 return (const outer *)((std::byte *)pinner - distance);
                 //return offsetof(outer, _inner);
             }
@@ -169,8 +169,8 @@ namespace
         {
             static const weak_outer * real_from_delegating(const int * pinner) noexcept
             {
-                weak_outer * dummy = nullptr;
-                size_t distance = (uintptr_t)&(dummy->_inner) - (uintptr_t)dummy;
+                weak_outer dummy;
+                size_t distance = (uintptr_t)&(dummy._inner) - (uintptr_t)&dummy;
                 return (const weak_outer *)((std::byte *)pinner - distance);
                 //return offsetof(outer, _inner);
             }
