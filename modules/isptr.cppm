@@ -24,7 +24,7 @@ module;
 #include <atomic>
 #include <cassert>
 #include <compare>
-#if defined(_MSC_VER) && !defined(__clang__)
+#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_X64) || defined(_M_IX86))
     #include <emmintrin.h>
 #endif
 
@@ -103,10 +103,10 @@ export module isptr;
 
 #if defined(_MSC_VER) && !defined(__clang__)
 
-    #if defined(_M_X64) || defined(_M_IX86)
-        #define ISPTR_THREAD_YIELD _mm_pause()
-    #elif defined(_M_ARM64) || defined(_M_ARM)
+    #if defined(_M_ARM64) || defined(_M_ARM) || defined(_M_ARM64EC)
         #define ISPTR_THREAD_YIELD __yield()
+    #elif defined(_M_X64) || defined(_M_IX86)
+        #define ISPTR_THREAD_YIELD _mm_pause()
     #endif
 
 #elif defined(__clang__) || defined(__GNUC__)
