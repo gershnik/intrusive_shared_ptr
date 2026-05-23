@@ -70,7 +70,7 @@ jobs:
             hosts.append({'os': 'windows-latest', 'platform': platform, 'module': True, 'nopython': platform == "Win32", 'jobname': f'Windows - {platform}'})
               
           #windows arm
-          hosts.append({'os': 'windows-11-arm', 'module': True, 'nopython': platform == "arm64", 'jobname': 'Windows - arm64'})
+          hosts.append({'os': 'windows-11-arm', 'module': True, 'nopython': False, 'jobname': 'Windows - arm64'})
 
           for arch in win_clang_archs:
             hosts.append({'os': 'windows-latest', 'arch': arch, 'compiler': 'clang-cl', 'nopython': arch == "x86", 'jobname': f'Windows - clang - {arch}'})
