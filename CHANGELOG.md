@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [1.11] - 2026-05-25
+
 ### Fixed
 - Invalid header `<emmintrin.h>` being included on Windows ARM compilation
 
@@ -119,3 +121,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [1.8]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.8
 [1.9]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.9
 [1.10]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.10
+[1.11]: https://github.com/gershnik/intrusive_shared_ptr/releases/v1.11
