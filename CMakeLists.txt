@@ -54,8 +54,10 @@ set(ISPTR_MODULES_FILES ${SRCDIR}/modules/isptr.cppm)
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.28")
 
 function(isptr_add_module target_name visibility)
+    set(_base ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/modules)
+    set(_files ${_base}/isptr.cppm)
     target_sources(${target_name} ${visibility}
-        FILE_SET isptr_module TYPE CXX_MODULES BASE_DIRS ${ISPTR_MODULES_BASE_DIRS} FILES ${ISPTR_MODULES_FILES}
+        FILE_SET isptr_module TYPE CXX_MODULES BASE_DIRS ${_base} FILES ${_files}
     )
 endfunction()
 

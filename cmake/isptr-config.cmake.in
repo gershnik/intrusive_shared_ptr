@@ -15,12 +15,11 @@ if(NOT TARGET isptr::isptr)
 
     get_filename_component(MYPATH "${CMAKE_CURRENT_LIST_FILE}" PATH)
     
-    set(ISPTR_MODULES_BASE_DIRS "${MYPATH}")
-    set(ISPTR_MODULES_FILES "${MYPATH}/isptr.cppm")
-
     function(isptr_add_module target_name visibility)
+        set(_base ${CMAKE_CURRENT_FUNCTION_LIST_DIR})
+        set(_files ${_base}/isptr.cppm)
         target_sources(${target_name} ${visibility}
-            FILE_SET isptr_module TYPE CXX_MODULES BASE_DIRS ${ISPTR_MODULES_BASE_DIRS} FILES ${ISPTR_MODULES_FILES}
+            FILE_SET thinsqlitepp_module TYPE CXX_MODULES BASE_DIRS ${_base} FILES ${_files}
         )
     endfunction()
 

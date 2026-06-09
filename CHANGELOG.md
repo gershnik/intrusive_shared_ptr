@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Fixed
+- The `isptr_add_module` CMake function now actually works.
+
 ## [1.11] - 2026-05-25
 
 ### Fixed
