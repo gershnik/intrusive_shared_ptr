@@ -88,7 +88,7 @@ foreach(TEST_STANDARD ${TEST_STANDARDS})
         )
 
         target_compile_options(${TEST_TARGET_NAME} PRIVATE
-            $<$<CXX_COMPILER_ID:MSVC>:/W4;/WX>
+            $<$<CXX_COMPILER_ID:MSVC>:/W4;/WX;/wd5285>
             $<$<CXX_COMPILER_ID:AppleClang>:-Wall;-Wextra;-pedantic;-Wno-self-assign-overloaded;-Wno-self-move>
             $<$<CXX_COMPILER_ID:GNU>:-Wall;-Wextra;-pedantic;-Wno-self-move>
         )
