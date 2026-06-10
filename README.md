@@ -214,7 +214,7 @@ Once the library has been installed, it can be used in the following ways:
 To use the header files, set the include directory to `<prefix>/include` where `<prefix>` 
 is the install prefix from above.
 
-To use the C++ module (if enabled during the build), include `<prefix>/include/intrusive_shared_ptr/isptr.cppm` 
+To use the C++ module, include `<prefix>/include/intrusive_shared_ptr/isptr.cppm` 
 in your build.
 
 
