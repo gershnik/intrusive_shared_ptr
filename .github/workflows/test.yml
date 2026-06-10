@@ -189,7 +189,7 @@ jobs:
     - name: Test
       shell: bash
       run: |
-        ctest --test-dir build --output-on-failure -VV
+        ctest --test-dir build -C Release --output-on-failure -VV
 
   container:
     needs: define-matrix
@@ -240,7 +240,7 @@ jobs:
     - name: Test
       shell: bash
       run: |
-        ctest --test-dir build --output-on-failure -VV
+        ctest --test-dir build -C Release --output-on-failure -VV
 
   big-endian:
     runs-on: ubuntu-latest
@@ -271,4 +271,4 @@ jobs:
       shell: bash
       run: |
         export QEMU_LD_PREFIX=/usr/powerpc-linux-gnu/
-        ctest --test-dir build --output-on-failure -VV
+        ctest --test-dir build -C Release --output-on-failure -VV
