@@ -232,10 +232,15 @@ jobs:
       run: |
         cmake $CMAKE_GENERATOR -S . -B build $CMAKE_ARGS -DISPTR_ENABLE_PYTHON=ON -DCMAKE_BUILD_TYPE=Release 
   
-    - name: Build and Test
+    - name: Build
       shell: bash
       run: |
-        cmake --build build --config Release --target run-test
+        cmake --build build --config Release
+
+    - name: Test
+      shell: bash
+      run: |
+        ctest --test-dir build --output-on-failure -VV
 
   big-endian:
     runs-on: ubuntu-latest
@@ -260,4 +265,10 @@ jobs:
       shell: bash
       run: |
         export QEMU_LD_PREFIX=/usr/powerpc-linux-gnu/
-        cmake --build build --config Release --target run-test
+        cmake --build build --config Release 
+
+    - name: Test
+      shell: bash
+      run: |
+        export QEMU_LD_PREFIX=/usr/powerpc-linux-gnu/
+        ctest --test-dir build --output-on-failure -VV
