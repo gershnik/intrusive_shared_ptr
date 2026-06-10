@@ -3,6 +3,7 @@
 .vs
 /build/
 /**/out/
+/Testing
 
 *.pdb
 CMakeSettings.json

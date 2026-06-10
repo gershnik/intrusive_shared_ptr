@@ -196,8 +196,10 @@ You can also build and install this library on your system using CMake.
 cd SOME_PATH
 cmake -S . -B build 
 
-#Optional
-#cmake --build build --target run-test
+#If you wish to run tests do this instead of the above
+#cmake -S . -B build -DBUILD_TESTING=ON 
+#cmake --build build 
+#ctest --test-dir build --output-on-failure
 
 #install to /usr/local
 sudo cmake --install build
@@ -598,13 +600,14 @@ Since version 1.5, this library supports being used as a C++ module.
 This mode is currently **experimental**. Please report bugs if you encounter any issues.
 
 In order to use C++ modules, you need a compiler that supports them. 
-Currently Clang >= 16 and MSVC toolset >= 14.34 are definitely known to work. 
+Currently Clang >= 18, MSVC toolset >= 14.34, and GCC >= 15 are definitely known to work. 
 Other compilers/versions may or may not work.
 
 If using CMake, follow the requirements at [cmake-cxxmodules](https://cmake.org/cmake/help/latest/manual/cmake-cxxmodules.7.html). 
 
 The library consists of a single module file at [modules/isptr.cppm](modules/isptr.cppm). 
 This file is auto-generated from all the library headers. Include it in your build.
+If using CMake, the `isptr_add_module` function is provided to simplify doing so (see [Integration](#integration) section above).
 
 ## Reference
 
