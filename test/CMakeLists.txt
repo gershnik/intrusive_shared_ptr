@@ -45,6 +45,9 @@ if (${ISPTR_ENABLE_MODULE})
     endif()
 endif()
 
+add_custom_target(tests ALL)
+
+
 foreach(TEST_STANDARD ${TEST_STANDARDS})
 
     foreach(TEST_VARIANT ${TEST_VARIANTS_${TEST_STANDARD}})
@@ -133,6 +136,8 @@ foreach(TEST_STANDARD ${TEST_STANDARDS})
             mocks.h
         )
 
+        add_dependencies(tests "${TEST_TARGET_NAME}")
+
         add_test(
             NAME "${TEST_TARGET_NAME}"
             COMMAND ${TEST_TARGET_NAME} -ni -fc
@@ -141,7 +146,3 @@ foreach(TEST_STANDARD ${TEST_STANDARDS})
     endforeach()
 
 endforeach()
-
-add_custom_target(run-test
-    ${TEST_COMMAND}
-)
