@@ -181,10 +181,15 @@ jobs:
       run: |
         cmake $CMAKE_GENERATOR -S . -B build $CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release 
 
-    - name: Build and Test
+    - name: Build
       shell: bash
       run: |
-        cmake --build build --config Release --target run-test
+        cmake --build build --config Release 
+
+    - name: Test
+      shell: bash
+      run: |
+        ctest --test-dir build --output-on-failure -VV
 
   container:
     needs: define-matrix

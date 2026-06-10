@@ -45,8 +45,6 @@ if (${ISPTR_ENABLE_MODULE})
     endif()
 endif()
 
-set(TEST_COMMAND "")
-
 foreach(TEST_STANDARD ${TEST_STANDARDS})
 
     foreach(TEST_VARIANT ${TEST_VARIANTS_${TEST_STANDARD}})
@@ -135,10 +133,10 @@ foreach(TEST_STANDARD ${TEST_STANDARDS})
             mocks.h
         )
 
-        list(APPEND TEST_COMMAND COMMAND)
-        list(APPEND TEST_COMMAND echo Running: ${TEST_TARGET_NAME})
-        list(APPEND TEST_COMMAND COMMAND)
-        list(APPEND TEST_COMMAND ${TEST_TARGET_NAME} -ni -fc)
+        add_test(
+            NAME "${TEST_TARGET_NAME}"
+            COMMAND ${TEST_TARGET_NAME} -ni -fc
+        )
 
     endforeach()
 
