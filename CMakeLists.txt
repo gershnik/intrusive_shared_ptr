@@ -50,8 +50,6 @@ PRIVATE
 add_library(intrusive-shared-ptr ALIAS ${LIBNAME})
 add_library(${LIBNAME}::${LIBNAME} ALIAS ${LIBNAME})
 
-set(ISPTR_MODULES_BASE_DIRS ${SRCDIR}/modules)
-set(ISPTR_MODULES_FILES ${SRCDIR}/modules/isptr.cppm)
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.28")
 
