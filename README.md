@@ -29,10 +29,15 @@ Documentation and formal tests are a work in progress.
     - [CMake via FetchContent](#cmake-via-fetchcontent)
     - [Conan](#conan)
     - [Vcpkg](#vcpkg)
+    - [Meson via subproject](#meson-via-subproject)
     - [Platform package managers](#platform-package-managers)
     - [Building and installing on your system](#building-and-installing-on-your-system)
+        - [Using CMake](#using-cmake)
+        - [Using Meson](#using-meson)
+    - [Using installed package](#using-installed-package)
         - [Basic use](#basic-use)
         - [CMake package](#cmake-package)
+        - [Meson package](#meson-package)
         - [Via pkg-config](#via-pkg-config)
     - [Copying to your sources](#copying-to-your-sources)
 - [Usage](#usage)
@@ -174,6 +179,37 @@ In manifest mode, run the following vcpkg command in your project directory:
 vcpkg add port intrusive-shared-ptr
 ```
 
+### Meson via subproject
+
+Place an `isptr.wrap` file in your `subprojects` directory:
+
+```ini
+[wrap-git]
+url = https://github.com/gershnik/intrusive_shared_ptr.git
+revision = v1.12
+depth = 1
+
+[provide]
+dependency_names = isptr, isptr-module
+```
+
+Set `revision` to the tag, branch or SHA you need.
+
+Then, in your `meson.build`:
+
+```meson
+#To use header files add the dependency to your target:
+isptr_dep = dependency('isptr')
+executable('mytarget', 'main.cpp', dependencies : isptr_dep)
+
+#To use the C++ module add this dependency instead:
+isptr_module_dep = dependency('isptr-module')
+executable('mytarget', 'main.cpp', dependencies : isptr_module_dep)
+```
+
+The `isptr-module` dependency adds `isptr.cppm` to whatever target consumes it so you can
+`import isptr;` from that target. The module is compiled privately into the target.
+
 ### Platform package managers
 
 On Debian-based systems `intrusive-shared-ptr` might be available via APT.
@@ -192,7 +228,9 @@ apt install libisptr-dev
 
 ### Building and installing on your system
 
-You can also build and install this library on your system using CMake.
+You can also build and install this library on your system.
+
+#### Using CMake
 
 1. Download or clone this repository into SOME_PATH
 2. On the command line:
@@ -209,6 +247,24 @@ sudo cmake --install build
 #or for a different prefix
 #cmake --install build --prefix /usr
 ```
+
+#### Using Meson
+
+1. Download or clone this repository into SOME_PATH
+2. On the command line:
+```bash
+cd SOME_PATH
+
+#install to /usr/local
+meson setup build
+sudo meson install -C build
+
+#or for a different prefix
+#meson setup build --prefix /usr
+#sudo meson install -C build
+```
+
+### Using installed package
 
 Once the library has been installed, it can be used in the following ways:
 
@@ -233,6 +289,18 @@ PRIVATE
 
 #To use the C++ module (the second param is the visibility)
 isptr_add_module(mytarget PRIVATE)
+```
+
+#### Meson package
+
+```meson
+#To use header files add the dependency to your target:
+isptr_dep = dependency('isptr')
+executable('mytarget', 'main.cpp', dependencies : isptr_dep)
+
+#To use the C++ module add isptr.cppm to your target instead:
+isptr_module = dependency('isptr').get_variable(pkgconfig : 'module')
+executable('mytarget', 'main.cpp', isptr_module)
 ```
 
 #### Via `pkg-config`
@@ -613,6 +681,9 @@ The library consists of a single module file at [modules/isptr.cppm](modules/isp
 This file is auto-generated from all the library headers. Include it in your build.
 
 If using CMake, the `isptr_add_module` function is provided to simplify doing so (see [Integration](#integration) section above).
+
+If using Meson, depend on `isptr-module` to add the module to a target, or use the pkg-config `module` variable 
+to locate it when consuming an installed package (see [Integration](#integration) section above).
 
 ## Reference
 

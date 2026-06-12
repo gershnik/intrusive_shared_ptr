@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Added
+- Meson is now directly supported to consume and install this library.
+
 ### Changed
 - Building tests is now gated behind `-DBUILD_TESTING=ON`.
 - The CMake build now supports `ctest`
