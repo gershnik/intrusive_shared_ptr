@@ -217,8 +217,7 @@ Once the library has been installed, it can be used in the following ways:
 To use the header files, set the include directory to `<prefix>/include` where `<prefix>` 
 is the install prefix from above.
 
-To use the C++ module, include `<prefix>/include/intrusive_shared_ptr/isptr.cppm` 
-in your build.
+To use the C++ module, include `<prefix>/share/isptr/isptr.cppm` in your build.
 
 
 #### CMake package
@@ -238,7 +237,9 @@ isptr_add_module(mytarget PRIVATE)
 
 #### Via `pkg-config`
 
-Add the output of `pkg-config --cflags isptr` to your compiler flags.
+To use header files, add the output of `pkg-config --cflags isptr` to your compiler flags.
+
+To use the module, add the output of `pkg-config --variable=module isptr` (it will be the path to a .cppm file) to your build.
 
 Note that the default installation prefix `/usr/local` might not be in the list of places your
 `pkg-config` looks into. If so, you might need to do:
@@ -610,6 +611,7 @@ If using CMake, follow the requirements at [cmake-cxxmodules](https://cmake.org/
 
 The library consists of a single module file at [modules/isptr.cppm](modules/isptr.cppm). 
 This file is auto-generated from all the library headers. Include it in your build.
+
 If using CMake, the `isptr_add_module` function is provided to simplify doing so (see [Integration](#integration) section above).
 
 ## Reference
