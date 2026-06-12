@@ -1,7 +1,7 @@
 /*
  Copyright 2004 Eugene Gershnik
 
- Use of this source code is governed by a BSD-style
+ Use of this source code is governed by the MIT
  license that can be found in the LICENSE file or at
  https://github.com/gershnik/intrusive_shared_ptr/blob/master/LICENSE.txt
 */
