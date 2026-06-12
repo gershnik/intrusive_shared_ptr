@@ -1,3 +1,5 @@
+# A note on clang::trivial_abi attribute
+
 When built with the Clang compiler, `intrusive_shared_ptr` is marked with the [\[\[clang::trivial_abi\]\]](https://clang.llvm.org/docs/AttributeReference.html#trivial-abi) attribute. A good description of what this attribute does and why it is important
 for performance can be found [here](https://quuxplusone.github.io/blog/2018/05/02/trivial-abi-101/).
 Another take on the performance issue as a comment on a standard library proposal can be found 

@@ -484,7 +484,7 @@ static_assert(sizeof(tiny) == 2);
 
 ```
 
-More details can be found in [this document](doc/ref_counted.md)
+More details can be found on [this page](https://gershnik.github.io/intrusive_shared_ptr/ref_counted.html)
 
 ### Supporting weak pointers
 
@@ -510,7 +510,7 @@ refcnt_ptr<foo> p2 = w1->lock();
 ```
 
 Note that you cannot customize the type of reference count if you support weak pointers - it will always be `intptr_t`.
-More details can be found in [this document](doc/ref_counted.md)
+More details can be found on [this page](https://gershnik.github.io/intrusive_shared_ptr/ref_counted.html)
 
 ### Using with Apple CoreFoundation types
 
@@ -687,9 +687,9 @@ to locate it when consuming an installed package (see [Integration](#integration
 
 ## Reference
 
-* [intrusive_shared_ptr.h](doc/intrusive_shared_ptr.md)
-* [refcnt_ptr.h](doc/refcnt_ptr.md)
-* [ref_counted.h](doc/ref_counted.md)
+The reference documentation for this library can be found at https://gershnik.github.io/intrusive_shared_ptr
+
+
 
 
 
