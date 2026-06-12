@@ -1,0 +1,43 @@
+name: Make Docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["master", "sphinx"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Python Environment
+        run: |
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip install -r .docbuild/requirements.txt
+      - name: Build docs
+        run: |
+          . .venv/bin/activate
+          tools/build-docs
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: 'build/sphinx/html'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

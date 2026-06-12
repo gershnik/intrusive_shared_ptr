@@ -1,0 +1,43 @@
+/* intrusive_shared_ptr documentation — typography & layout tuning for Furo.
+   Loaded after the theme's own stylesheet, so these win by source order. */
+
+
+body {
+  --code-font-size: 0.74rem;   /* keep Furo's variable in sync (line numbers, etc.) */
+  --api-font-size: 0.76rem;
+  --color-api-name: #0e7490;
+  --color-api-pre-name: #0e7490;
+}
+
+article {
+  font-size: 90%;
+}
+
+.sidebar-brand-text { font-size: 1.4em; }
+
+.highlight pre,
+pre.literal-block {
+  font-size: 0.74rem;   /* ~13px fenced code blocks */
+  line-height: 1.5;
+}
+
+.sig:not(.sig-inline) {
+  font-size: 0.76rem;   /* ~13.4px C++ signature blocks */
+  font-weight: 600;     /* lighter than Furo's bold 700 for long declarations */
+}
+
+code.literal,
+.sig-inline {
+  font-size: 0.8em;     /* inline code, relative so it still scales in headings */
+}
+
+/* A roomier left navigation column so entries don't wrap. */
+.sidebar-drawer { min-width: 16em; }
+.sidebar-container { width: 16em; }
+
+
+@media (min-width: 68em) {
+  .sidebar-drawer { width: 16em; min-width: 16em; }
+  .toc-drawer { width: 35em; }
+  .content { width: auto; max-width: none; flex: 1 1 auto; }
+}
