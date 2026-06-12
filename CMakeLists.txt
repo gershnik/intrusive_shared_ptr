@@ -14,9 +14,9 @@ if (NOT ISPTR_VERSION)
 endif()
 string(STRIP ${ISPTR_VERSION} ISPTR_VERSION)
 
-option(BUILD_TESTING "Enable testing" ${PROJECT_IS_TOP_LEVEL})
-
 project(isptr VERSION ${ISPTR_VERSION} LANGUAGES CXX)
+
+option(BUILD_TESTING "Enable testing" ${PROJECT_IS_TOP_LEVEL})
 
 set(SRCDIR ${CMAKE_CURRENT_LIST_DIR})
 set(LIBNAME isptr)
