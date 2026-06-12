@@ -75,7 +75,7 @@ This library uses named functions to perform conversion. You see exactly what is
 Many libraries use [ADL](https://en.wikipedia.org/wiki/Argument-dependent_name_lookup) to find "add reference" and 
 "release reference" functions for the underlying type.
 That is, they have expressions like `add_ref(p)` in their implementation, and expect a function named `add_ref` that accepts a pointer to the underlying type to be found via ADL.
-This solution is great in many cases but it breaks when working with some C types like Apple's `CTypeRef`. This one is actually a typedef to `void *`, so if you have an `add_ref` that accepts it, you have just made every unrelated `void *` reference-counted (with very bad results if you accidentally put a wrong object into a smart pointer).
+This solution is great in many cases but it breaks when working with some C types like Apple's `CFTypeRef`. This one is actually a typedef to `void *`, so if you have an `add_ref` that accepts it, you have just made every unrelated `void *` reference-counted (with very bad results if you accidentally put a wrong object into a smart pointer).
 A better way to define how reference counting is done is to pass a traits class to the smart pointer. (The standard library proposal gets this one right).
 
 This library uses traits.
@@ -105,7 +105,7 @@ you can always work around it via `(*p).*whatever`, but in generic code this is 
 
 Sometimes you need to operate on smart pointers atomically. To the best of my knowledge, no library currently provides this functionality.
 
-This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending to it the normal `std::atomic` semantics.
+This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending the normal `std::atomic` semantics to it.
 
 ### Trivial ABI
 
@@ -178,6 +178,10 @@ vcpkg add port intrusive-shared-ptr
 
 On Debian-based systems `intrusive-shared-ptr` might be available via APT.
 
+> [!TIP]
+> The version available from APT is usually pretty old and, thus, by definition buggy. It is recommended to  
+> rely on other methods if at all possible.
+
 You can consult https://pkgs.org/search/?q=libisptr-dev for up-to-date availability information.
 
 If available, it can be installed via
@@ -196,8 +200,7 @@ You can also build and install this library on your system using CMake.
 cd SOME_PATH
 cmake -S . -B build 
 
-#If you wish to run tests do this instead of the above
-#cmake -S . -B build -DBUILD_TESTING=ON 
+#If you wish to run tests 
 #cmake --build build 
 #ctest --test-dir build --output-on-failure
 
