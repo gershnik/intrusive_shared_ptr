@@ -149,13 +149,13 @@ jobs:
         if [[ '${{ matrix.os }}' == windows-latest ]]; then
             if [[ '${{ matrix.compiler }}' != '' ]]; then
                 if [[ '${{ matrix.arch }}' == "x64" ]]; then
-                    VCPREFIX="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\Llvm\\x64\\bin"
+                    VCPREFIX="C:\\Program Files\\Microsoft Visual Studio\\2026\\Enterprise\\VC\\Tools\\Llvm\\x64\\bin"
                 else
-                    VCPREFIX="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Tools\\Llvm\\bin"
+                    VCPREFIX="C:\\Program Files\\Microsoft Visual Studio\\2026\\Enterprise\\VC\\Tools\\Llvm\\bin"
                 fi
                 echo "CC=$VCPREFIX\\${{ matrix.compiler }}" >> $GITHUB_ENV
                 echo "CXX=$VCPREFIX\\${{ matrix.compiler }}" >> $GITHUB_ENV
-                echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+                echo "CMAKE_GENERATOR=-GNinja" >> $GITHUB_ENV
             fi
         fi
 
