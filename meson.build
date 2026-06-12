@@ -81,10 +81,10 @@ if not meson.is_subproject()
         install_dir : get_option('includedir'),
     )
 
-    # The C++ module source. CMake installs it to <libdir>/isptr, and its
-    # generated isptr-config.cmake points isptr_add_module() there; we match
-    # that location.
-    module_install_dir = get_option('libdir') / 'isptr'
+    # The C++ module source. Installed under <datadir>/isptr (share/isptr) to
+    # match the CMake build. It is arch-independent, so it belongs in share, not
+    # libdir. Consumers locate it through the `module` pkg-config variable below.
+    module_install_dir = get_option('datadir') / 'isptr'
     install_data(
         isptr_module_file,
         install_dir : module_install_dir,
@@ -102,7 +102,7 @@ if not meson.is_subproject()
         # root is <includedir> itself (the default subdir '.').
         subdirs : ['.'],
         variables : [
-            'module=' + ('${prefix}' / get_option('libdir') / 'isptr' / 'isptr.cppm'),
+            'module=' + ('${prefix}' / get_option('datadir') / 'isptr' / 'isptr.cppm'),
         ],
         install_dir : get_option('datadir') / 'pkgconfig',
     )
