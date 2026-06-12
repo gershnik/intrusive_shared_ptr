@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Building tests is now gated behind `-DBUILD_TESTING=ON`.
 - The CMake build now supports `ctest`
 
+### Fixed
+- CMake install now puts the *.cmake files and .cppm module under `share/isptr` rather than `/lib/{.../}isptr` as it
+  should always have done, since they aren't architecture dependent. This should be completely transparent to clients 
+  unless you hardcode the paths into the install location for some reason.
+
 ## [1.12] - 2026-06-09
 
 ### Fixed
