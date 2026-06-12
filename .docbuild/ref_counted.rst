@@ -88,7 +88,7 @@ Usage
 ~~~~~
 
 Derive from ``ref_counted`` and make it a friend. Keep your destructor private or
-protected — reference-counted objects must be destroyed through the count, not by
+protected. Reference-counted objects must be destroyed through the count, not by
 a direct ``delete``.
 
 .. code-block:: cpp
@@ -116,7 +116,7 @@ Rules for constructors and destructors
      is fine if no subsequent constructor code can throw.
    * **Your destructor must not throw.** The counting machinery does not expect
      it and will break.
-   * If your class is itself a base, its destructor must be ``virtual`` —
+   * If your class is itself a base, its destructor must be ``virtual``.
      ``ref_counted`` invokes the destructor of the ``Derived`` argument. (Not
      applicable if ``Derived`` is the most-derived class.)
 
@@ -206,7 +206,7 @@ the reference count to 1; the destructor is **protected** as well.
 
    *Protected, not* ``noexcept`` (it allocates). Creates the control block on
    first use; the returned pointer already has its own count incremented.
-   Overridable — see :ref:`customizing-weak-reference-type`.
+   Overridable. See :ref:`customizing-weak-reference-type`.
 
 .. cpp:namespace-pop::
 
@@ -252,7 +252,7 @@ class pointer.
 Usage
 ~~~~~
 
-You rarely name ``weak_reference`` directly — it is available as the
+You rarely name ``weak_reference`` directly. It is available as the
 ``weak_value_type`` of your ``ref_counted`` class. With ``refcnt_ptr`` you
 convert between strong and weak pointers like so:
 
@@ -300,7 +300,7 @@ constructors and assignment operators are **deleted**. The destructor is
 
 .. cpp:function:: void destroy() const
 
-   *Protected — and, unlike the rest of this class, not* ``noexcept``. Called when
+   *Protected. Unlike the rest of this class it is not* ``noexcept``. Called when
    this control block's own count reaches 0; the default calls ``delete`` on the
    derived pointer. Overridable.
 

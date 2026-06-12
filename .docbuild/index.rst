@@ -13,6 +13,9 @@ see the project `README <https://github.com/gershnik/intrusive_shared_ptr/blob/m
    intrusive_shared_ptr.h <intrusive_shared_ptr>
    refcnt_ptr.h <refcnt_ptr>
    ref_counted.h <ref_counted>
+   apple_cf_ptr.h <apple_cf_ptr>
+   com_ptr.h <com_ptr>
+   python_ptr.h <python_ptr>
 
 Indices
 =======

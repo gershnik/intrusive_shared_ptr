@@ -33,8 +33,16 @@ Member types
 ~~~~~~~~~~~~~
 
 .. cpp:type:: pointer = T *
+
+   The stored pointer type.
+
 .. cpp:type:: element_type = T
+
+   The pointee type.
+
 .. cpp:type:: traits_type = Traits
+
+   The traits in use.
 
 Construction, assignment, destruction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,9 +138,9 @@ Modifiers
    ``T**`` aliasing the smart pointer's internal storage, for passing to C
    functions that write back a reference-counted pointer.
 
-   * ``get_output_param`` first resets the pointer to null — use it for **output**
+   * ``get_output_param`` first resets the pointer to null. Use it for **output**
      parameters, where the callee returns a freshly counted pointer.
-   * ``get_inout_param`` passes the current value through unchanged — use it for
+   * ``get_inout_param`` passes the current value through unchanged. Use it for
      **in/out** parameters, where the callee both reads and replaces it.
 
    .. tip::
@@ -205,10 +213,15 @@ Specializations
 .. cpp:class:: template<class Traits, class T> std::atomic<intrusive_shared_ptr<T, Traits>>
 
    Provides the standard ``std::atomic`` interface for ``intrusive_shared_ptr``.
-   It is **not** lock-free.
+   It is **not** lock-free: operations are serialized with an internal lock.
 
    .. cpp:type:: value_type = isptr::intrusive_shared_ptr<T, Traits>
+
+      The pointer type being wrapped.
+
    .. cpp:member:: static constexpr bool is_always_lock_free
+
+      Always ``false``.
 
    .. rubric:: Construction / assignment
 
@@ -217,19 +230,52 @@ Specializations
       Initialize with a null pointer.
 
    .. cpp:function:: atomic(value_type desired) noexcept
+
+      Initialize holding ``desired``.
+
    .. cpp:function:: atomic(const atomic &) = delete
-   .. cpp:function:: atomic & operator=(const atomic &) = delete
+                     atomic & operator=(const atomic &) = delete
+
+      Not copyable.
+
    .. cpp:function:: ~atomic() noexcept
+
+      Releases the held pointer.
+
    .. cpp:function:: value_type operator=(value_type desired) noexcept
+
+      Same as ``store()``.
+
    .. cpp:function:: operator value_type() const noexcept
+
+      Same as ``load()``.
 
    .. rubric:: Atomic operations
 
+   Each behaves like the matching ``std::atomic`` member.
+
    .. cpp:function:: value_type load(std::memory_order order = std::memory_order_seq_cst) const noexcept
+
+      Read the stored pointer.
+
    .. cpp:function:: void store(value_type desired, std::memory_order order = std::memory_order_seq_cst) noexcept
+
+      Replace the stored pointer.
+
    .. cpp:function:: value_type exchange(value_type desired, std::memory_order order = std::memory_order_seq_cst) noexcept
+
+      Replace the stored pointer and return the previous value.
+
    .. cpp:function:: bool compare_exchange_strong(value_type & expected, value_type desired, std::memory_order success, std::memory_order failure) noexcept
                      bool compare_exchange_strong(value_type & expected, value_type desired, std::memory_order order = std::memory_order_seq_cst) noexcept
+
+      Compare and swap.
+
    .. cpp:function:: bool compare_exchange_weak(value_type & expected, value_type desired, std::memory_order success, std::memory_order failure) noexcept
                      bool compare_exchange_weak(value_type & expected, value_type desired, std::memory_order order = std::memory_order_seq_cst) noexcept
+
+      Compare and swap. May fail spuriously.
+
    .. cpp:function:: bool is_lock_free() const noexcept
+
+      Always ``false``.
