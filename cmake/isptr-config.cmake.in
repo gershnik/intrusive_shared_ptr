@@ -13,8 +13,6 @@
 if(NOT TARGET isptr::isptr)
     include(${CMAKE_CURRENT_LIST_DIR}/isptr-exports.cmake)
 
-    get_filename_component(MYPATH "${CMAKE_CURRENT_LIST_FILE}" PATH)
-    
     function(isptr_add_module target_name visibility)
         set(_base ${CMAKE_CURRENT_FUNCTION_LIST_DIR})
         set(_files ${_base}/isptr.cppm)
@@ -22,8 +20,6 @@ if(NOT TARGET isptr::isptr)
             FILE_SET thinsqlitepp_module TYPE CXX_MODULES BASE_DIRS ${_base} FILES ${_files}
         )
     endfunction()
-
-    set(MYPATH)
 
 endif()
 
