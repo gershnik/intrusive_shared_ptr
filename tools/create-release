@@ -41,6 +41,9 @@ readme = re.sub(r'`intrusive_shared_ptr/(?:\d+(?:\.\d+)+)`',
 readme = re.sub(r'GIT_TAG(\s+)v(?:\d+(?:\.\d+)+)',
                 fr'GIT_TAG\1v{NEW_VER}',
                 readme)
+readme = re.sub(r'revision(\s*)=(\s*)v(?:\d+(?:\.\d+)+)',
+                fr'revision\1=\2v{NEW_VER}',
+                readme)
 (ROOT / 'README.md').write_text(readme)
 
 subprocess.run(['git', 'add', ROOT / "CHANGELOG.md", ROOT / "VERSION", ROOT / 'README.md'], check=True)
