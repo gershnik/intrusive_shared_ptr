@@ -29,10 +29,15 @@ Documentation and formal tests are a work in progress.
     - [CMake via FetchContent](#cmake-via-fetchcontent)
     - [Conan](#conan)
     - [Vcpkg](#vcpkg)
+    - [Meson via subproject](#meson-via-subproject)
     - [Platform package managers](#platform-package-managers)
     - [Building and installing on your system](#building-and-installing-on-your-system)
+        - [Using CMake](#using-cmake)
+        - [Using Meson](#using-meson)
+    - [Using installed package](#using-installed-package)
         - [Basic use](#basic-use)
         - [CMake package](#cmake-package)
+        - [Meson package](#meson-package)
         - [Via pkg-config](#via-pkg-config)
     - [Copying to your sources](#copying-to-your-sources)
 - [Usage](#usage)
@@ -75,7 +80,7 @@ This library uses named functions to perform conversion. You see exactly what is
 Many libraries use [ADL](https://en.wikipedia.org/wiki/Argument-dependent_name_lookup) to find "add reference" and 
 "release reference" functions for the underlying type.
 That is, they have expressions like `add_ref(p)` in their implementation, and expect a function named `add_ref` that accepts a pointer to the underlying type to be found via ADL.
-This solution is great in many cases but it breaks when working with some C types like Apple's `CTypeRef`. This one is actually a typedef to `void *`, so if you have an `add_ref` that accepts it, you have just made every unrelated `void *` reference-counted (with very bad results if you accidentally put a wrong object into a smart pointer).
+This solution is great in many cases but it breaks when working with some C types like Apple's `CFTypeRef`. This one is actually a typedef to `void *`, so if you have an `add_ref` that accepts it, you have just made every unrelated `void *` reference-counted (with very bad results if you accidentally put a wrong object into a smart pointer).
 A better way to define how reference counting is done is to pass a traits class to the smart pointer. (The standard library proposal gets this one right).
 
 This library uses traits.
@@ -105,7 +110,7 @@ you can always work around it via `(*p).*whatever`, but in generic code this is 
 
 Sometimes you need to operate on smart pointers atomically. To the best of my knowledge, no library currently provides this functionality.
 
-This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending to it the normal `std::atomic` semantics.
+This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending the normal `std::atomic` semantics to it.
 
 ### Trivial ABI
 
@@ -160,7 +165,13 @@ isptr_add_module(mytarget PRIVATE)
 
 ### Conan
 
-Add `intrusive_shared_ptr/1.12` to your conanfile.
+Add `intrusive_shared_ptr/1.12` to your conanfile. Then
+```cmake
+find_package(isptr CONFIG REQUIRED)
+target_link_libraries(mytarget PRIVATE isptr::isptr)
+```
+
+Note that Conan integration currently doesn't provide a way to use the C++ module. 
 
 ### Vcpkg
 
@@ -174,9 +185,55 @@ In manifest mode, run the following vcpkg command in your project directory:
 vcpkg add port intrusive-shared-ptr
 ```
 
+Then:
+
+```cmake
+find_package(isptr CONFIG REQUIRED)
+#for headers
+target_link_libraries(mytarget PRIVATE isptr::isptr)
+#for module
+isptr_add_module(mytarget PRIVATE)
+```
+
+### Meson via subproject
+
+Place an `isptr.wrap` file in your `subprojects` directory:
+
+```ini
+[wrap-git]
+url = https://github.com/gershnik/intrusive_shared_ptr.git
+revision = v1.12
+depth = 1
+
+[provide]
+dependency_names = isptr, isptr-module
+```
+
+Set `revision` to the tag, branch or SHA you need. The `[provide]` section makes plain
+`dependency()` lookups resolve to this subproject so you do not need to call `subproject()` yourself.
+
+Then, in your `meson.build`:
+
+```meson
+#To use header files add the dependency to your target:
+isptr_dep = dependency('isptr')
+executable('mytarget', 'main.cpp', dependencies : isptr_dep)
+
+#To use the C++ module add this dependency instead:
+isptr_module_dep = dependency('isptr-module')
+executable('mytarget', 'main.cpp', dependencies : isptr_module_dep)
+```
+
+The `isptr-module` dependency adds `isptr.cppm` to whatever target consumes it so you can
+`import isptr;` from that target. The module is compiled privately into the target.
+
 ### Platform package managers
 
 On Debian-based systems `intrusive-shared-ptr` might be available via APT.
+
+> [!TIP]
+> The version available from APT is usually pretty old and, thus, by definition buggy. It is recommended to  
+> rely on other methods if at all possible.
 
 You can consult https://pkgs.org/search/?q=libisptr-dev for up-to-date availability information.
 
@@ -188,7 +245,9 @@ apt install libisptr-dev
 
 ### Building and installing on your system
 
-You can also build and install this library on your system using CMake.
+You can also build and install this library on your system.
+
+#### Using CMake
 
 1. Download or clone this repository into SOME_PATH
 2. On the command line:
@@ -196,8 +255,7 @@ You can also build and install this library on your system using CMake.
 cd SOME_PATH
 cmake -S . -B build 
 
-#If you wish to run tests do this instead of the above
-#cmake -S . -B build -DBUILD_TESTING=ON 
+#If you wish to run tests 
 #cmake --build build 
 #ctest --test-dir build --output-on-failure
 
@@ -207,6 +265,24 @@ sudo cmake --install build
 #cmake --install build --prefix /usr
 ```
 
+#### Using Meson
+
+1. Download or clone this repository into SOME_PATH
+2. On the command line:
+```bash
+cd SOME_PATH
+
+#install to /usr/local
+meson setup build
+sudo meson install -C build
+
+#or for a different prefix
+#meson setup build --prefix /usr
+#sudo meson install -C build
+```
+
+### Using installed package
+
 Once the library has been installed, it can be used in the following ways:
 
 #### Basic use 
@@ -214,8 +290,7 @@ Once the library has been installed, it can be used in the following ways:
 To use the header files, set the include directory to `<prefix>/include` where `<prefix>` 
 is the install prefix from above.
 
-To use the C++ module, include `<prefix>/include/intrusive_shared_ptr/isptr.cppm` 
-in your build.
+To use the C++ module, include `<prefix>/share/isptr/isptr.cppm` in your build.
 
 
 #### CMake package
@@ -233,9 +308,23 @@ PRIVATE
 isptr_add_module(mytarget PRIVATE)
 ```
 
+#### Meson package
+
+```meson
+#To use header files add the dependency to your target:
+isptr_dep = dependency('isptr')
+executable('mytarget', 'main.cpp', dependencies : isptr_dep)
+
+#To use the C++ module add isptr.cppm to your target instead:
+isptr_module = dependency('isptr').get_variable(pkgconfig : 'module')
+executable('mytarget', 'main.cpp', isptr_module)
+```
+
 #### Via `pkg-config`
 
-Add the output of `pkg-config --cflags isptr` to your compiler flags.
+To use header files, add the output of `pkg-config --cflags isptr` to your compiler flags.
+
+To use the module, add the output of `pkg-config --variable=module isptr` (it will be the path to a .cppm file) to your build.
 
 Note that the default installation prefix `/usr/local` might not be in the list of places your
 `pkg-config` looks into. If so, you might need to do:
@@ -607,7 +696,11 @@ If using CMake, follow the requirements at [cmake-cxxmodules](https://cmake.org/
 
 The library consists of a single module file at [modules/isptr.cppm](modules/isptr.cppm). 
 This file is auto-generated from all the library headers. Include it in your build.
+
 If using CMake, the `isptr_add_module` function is provided to simplify doing so (see [Integration](#integration) section above).
+
+If using Meson, depend on `isptr-module` to add the module to a target, or use the pkg-config `module` variable 
+to locate it when consuming an installed package (see [Integration](#integration) section above).
 
 ## Reference
 
