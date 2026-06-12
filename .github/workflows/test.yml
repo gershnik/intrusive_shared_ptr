@@ -148,10 +148,11 @@ jobs:
 
         if [[ '${{ matrix.os }}' == windows-latest ]]; then
             if [[ '${{ matrix.compiler }}' != '' ]]; then
+                VSROOT=`"/c/Program Files (x86)/Microsoft Visual Studio/Installer/vswhere.exe" -latest -property installationPath`
                 if [[ '${{ matrix.arch }}' == "x64" ]]; then
-                    VCPREFIX="C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\VC\\Tools\\Llvm\\x64\\bin"
+                    VCPREFIX="$VSROOT\\VC\\Tools\\Llvm\\x64\\bin"
                 else
-                    VCPREFIX="C:\\Program Files\\Microsoft Visual Studio\\18\\Enterprise\\VC\\Tools\\Llvm\\bin"
+                    VCPREFIX="$VSROOT\\VC\\Tools\\Llvm\\bin"
                 fi
                 echo "CC=$VCPREFIX\\${{ matrix.compiler }}" >> $GITHUB_ENV
                 echo "CXX=$VCPREFIX\\${{ matrix.compiler }}" >> $GITHUB_ENV
