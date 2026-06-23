@@ -8,7 +8,7 @@ on:
       - 'LICENSE'
       - 'CHANGELOG.md'
       - 'doc/**'
-      - 'tools/**'
+      - '.tools/**'
 
 jobs:
   define-matrix:
@@ -33,7 +33,7 @@ jobs:
           }
 
           win_platforms = ["x64", "Win32"]
-          win_clang_archs = ["x64", "x86"]
+          win_clang_archs = ["x64"] #, "x86"]
 
           gcc_map = {
             11: 'ubuntu-22.04', 

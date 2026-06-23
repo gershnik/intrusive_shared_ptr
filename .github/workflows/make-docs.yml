@@ -31,7 +31,7 @@ jobs:
       - name: Build docs
         run: |
           . .venv/bin/activate
-          tools/build-docs
+          .tools/build-docs
       - name: Setup Pages
         uses: actions/configure-pages@v6
       - name: Upload artifact
