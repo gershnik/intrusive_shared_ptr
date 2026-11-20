@@ -148,7 +148,7 @@ include(FetchContent)
 
 FetchContent_Declare(isptr
     GIT_REPOSITORY  https://github.com/gershnik/intrusive_shared_ptr.git
-    GIT_TAG         v1.13  #use the tag, branch or SHA you need
+    GIT_TAG         v1.14  #use the tag, branch or SHA you need
     GIT_SHALLOW     TRUE
 )
 ...
@@ -168,7 +168,7 @@ isptr_add_module(mytarget PRIVATE)
 
 ### Conan
 
-Add `intrusive_shared_ptr/1.13` to your conanfile.
+Add `intrusive_shared_ptr/1.14` to your conanfile.
 
 ### Vcpkg
 
@@ -189,7 +189,7 @@ Place an `isptr.wrap` file in your `subprojects` directory:
 ```ini
 [wrap-git]
 url = https://github.com/gershnik/intrusive_shared_ptr.git
-revision = v1.13
+revision = v1.14
 depth = 1
 
 [provide]
