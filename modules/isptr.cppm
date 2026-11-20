@@ -550,8 +550,7 @@ namespace isptr
                     while (m_value.load(std::memory_order_relaxed)) 
                         yield();
                     
-                    unsigned current = 0;
-                    if (m_value.compare_exchange_strong(current, 1, std::memory_order_acquire, std::memory_order_relaxed))
+                    if (m_value.exchange(1, std::memory_order_acquire) == 0)
                         return;
                 
                     yield();
