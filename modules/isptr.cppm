@@ -649,8 +649,10 @@ namespace std
                 this->m_lock.unlock();
                 return true;
             } else {
-                expected = value_type::ref(this->m_p);
+                auto current = value_type::ref(this->m_p);
                 this->m_lock.unlock();
+                //assign outside the lock: releasing the old expected may run its destructor
+                expected = std::move(current);
                 return false;
             }
         }
