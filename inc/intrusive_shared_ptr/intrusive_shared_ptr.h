@@ -15,6 +15,10 @@
 #include <ostream>
 #include <atomic>
 #include <memory>
+#include <chrono>
+#include <ctime>
+
+#include <time.h>
 
 
 namespace isptr
@@ -400,37 +404,89 @@ namespace isptr
         { return Dest::noref(static_cast<typename Dest::pointer>(p.release())); }
 }
 
+namespace isptr_fake_nanosleep {
+    struct detected {};
+    detected nanosleep(...);
+}
+
 namespace isptr 
 {
     namespace internal
     {
+        
+        using namespace isptr_fake_nanosleep;
+
+    #if !defined(_WIN32) && !defined(__CYGWIN__)
+
+        inline constexpr bool has_nanosleep = !std::is_same_v<
+                    decltype(nanosleep((const std::timespec *)nullptr, (std::timespec *)nullptr)),
+                    isptr_fake_nanosleep::detected>;
+    #else
+
+        inline constexpr bool has_nanosleep = false;
+
+    #endif
+        
         class simple_lock {
+        #define ISPTR_LOCK_FAST (m_value.load(std::memory_order_relaxed) || m_value.exchange(1, std::memory_order_acquire))
         public:
-            void lock() noexcept 
+            //Lock for reading the protected pointer
+            void lock_read() noexcept 
             {
-                for ( ; ; ) {
-                    
-                    while (m_value.load(std::memory_order_relaxed)) 
-                        yield();
-                    
-                    if (m_value.exchange(1, std::memory_order_acquire) == 0)
-                        return;
-                
-                    yield();
-                }
+                if (!ISPTR_LOCK_FAST) return;
+                lock_slow(false);
+            }
+
+            //Lock for writing the protected pointer: backs off longer under contention
+            void lock_write() noexcept
+            {
+                if (!ISPTR_LOCK_FAST) return;
+                lock_slow(true);
             }
 
             void unlock() noexcept 
                 { m_value.store(0, std::memory_order_release); }
 
         private:
-            static void yield() noexcept {
-                #ifdef ISPTR_THREAD_YIELD
-                    ISPTR_THREAD_YIELD;
-                #endif
+            ISPTR_NOINLINE void lock_slow(bool writer) noexcept
+            {
+                for ( ; ; ) {
+
+                    if (!ISPTR_LOCK_FAST) return;
+                    if (!ISPTR_LOCK_FAST) return;
+                    if (!ISPTR_LOCK_FAST) return;
+                    if (!ISPTR_LOCK_FAST) return;
+                    if (!ISPTR_LOCK_FAST) return;
+                    if (!ISPTR_LOCK_FAST) return;
+                    if (!ISPTR_LOCK_FAST) return;
+                    if (!ISPTR_LOCK_FAST) return;
+
+                    if constexpr(has_nanosleep)
+                    {
+                        //Get off the CPU as briefly as possible
+                        //Writers sleep longer.
+                        const timespec ts = { 0, writer ? 10'000 : 1 };
+                        nanosleep(&ts, nullptr);
+                    }
+                    else
+                    {
+                        using namespace std::chrono;
+                        //Windows has no sub-millisecond sleep: Sleep(0) returns immediately when there are idle
+                        //cores and Sleep(1) sleeps for 1ms or more, starving the waiters.
+                        //Instead busy-wait 6us for readers, 30us for writers.
+                        const auto deadline = steady_clock::now() + nanoseconds(writer ? 30'000 : 6'000);
+                        do {
+                            #ifdef ISPTR_THREAD_YIELD
+                                ISPTR_THREAD_YIELD;
+                            #endif
+                        } while (steady_clock::now() < deadline);
+                    }
+                }
             }
         private:
             std::atomic<unsigned> m_value{0};
+
+        #undef ISPTR_LOCK_FAST
         };
     }
 }
@@ -466,7 +522,7 @@ namespace std
 
         value_type load(memory_order /*order*/ = memory_order_seq_cst) const noexcept
         {
-            this->m_lock.lock();
+            this->m_lock.lock_read();
             auto ret = value_type::ref(this->m_p);
             this->m_lock.unlock();
             return ret;
@@ -474,14 +530,14 @@ namespace std
 
         void store(value_type desired, memory_order /*order*/ = memory_order_seq_cst) noexcept
         { 
-            this->m_lock.lock();
+            this->m_lock.lock_write();
             std::swap(this->m_p, desired.m_p);
             this->m_lock.unlock();
         }
         
         value_type exchange(value_type desired, memory_order /*order*/ = memory_order_seq_cst) noexcept
         {
-            this->m_lock.lock();
+            this->m_lock.lock_write();
             std::swap(this->m_p, desired.m_p);
             this->m_lock.unlock();
             return desired;
@@ -505,7 +561,7 @@ namespace std
     private:
         bool do_compare_exchange(value_type & expected, value_type && desired) noexcept
         {
-            this->m_lock.lock();
+            this->m_lock.lock_write();
             if (this->m_p == expected.m_p) {
                 std::swap(this->m_p, desired.m_p);
                 this->m_lock.unlock();

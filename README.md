@@ -108,9 +108,12 @@ you can always work around it via `(*p).*whatever`, but in generic code this is 
 
 ### Atomic access
 
-Sometimes you need to operate on smart pointers atomically. To the best of my knowledge, no library currently provides this functionality.
+Sometimes you need to operate on smart pointers atomically.
 
-This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending the normal `std::atomic` semantics to it.
+As far as I know, almost no _general purpose_ intrusive pointer library provides this functionality, with the notable exception of [ConcurrentCpp](https://github.com/fpikus/ConcurrentCpp). That library, however, imposes additional requirements on the pointee.
+
+This library provides a specialization of `std::atomic<intrusive_shared_ptr<...>>` extending the normal `std::atomic` semantics to it. Any pointee type is supported.
+
 
 ### Trivial ABI
 
@@ -651,6 +654,26 @@ my_ptr ptr1 = aptr.exchange(ptr);
 //etc.
 
 ```
+
+There are various tradeoffs involved when implementing atomic access to shared pointers.
+The most important one is the size of `std::atomic<intrusive_shared_ptr>` vs. requirements 
+imposed on the pointee type. This library makes an atomic object equal in size to two pointers
+but imposes no restrictions on type T. 
+
+> [!NOTE]
+> An alternative design can use some unused bits of the pointer to store lock information 
+> at the cost of requiring T to have a specific alignment. See for example the implementation in
+> [ConcurrentCpp](https://github.com/fpikus/ConcurrentCpp/blob/main/IntrSharedPtr/intr_shared_ptr.h).
+>
+> Since `intrusive_shared_ptr` is a general purpose smart pointer that must work with pointees 
+> its users may not control, it cannot impose any alignment requirements on the pointee type.
+
+A _general purpose_ atomic intrusive smart pointer cannot be made lock-free (or at least nobody yet 
+discovered a way to do so).
+The current implementation uses a highly optimized internal lock that, at the time of this writing, 
+achieves performance competitive with that of `ConcurrentCpp`. 
+This isn't accidental, as many performance improvement ideas pioneered by `ConcurrentCpp` have
+been directly borrowed here. Thank you, [Fedor Pikus](https://github.com/fpikus).
 
 ## Constexpr functionality
 

@@ -84,16 +84,19 @@
 #if defined(_MSC_VER) && !defined(__clang__)
 
     #define ISPTR_ALWAYS_INLINE __forceinline
+    #define ISPTR_NOINLINE __declspec(noinline)
     #define ISPTR_TRIVIAL_ABI
 
 #elif defined(__clang__) 
 
     #define ISPTR_ALWAYS_INLINE [[gnu::always_inline]] inline
+    #define ISPTR_NOINLINE [[gnu::noinline]]
     #define ISPTR_TRIVIAL_ABI [[clang::trivial_abi]]
 
 #elif defined (__GNUC__)
 
     #define ISPTR_ALWAYS_INLINE [[gnu::always_inline]] inline
+    #define ISPTR_NOINLINE [[gnu::noinline]]
     #define ISPTR_TRIVIAL_ABI
 
 #endif

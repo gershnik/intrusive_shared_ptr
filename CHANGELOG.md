@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Changed
+- Significant performance improvements to `std::atomic<intrusive_shared_ptr>`, especially
+  (but not only) under high contention.
+
 ## [1.13] - 2026-06-22
 
 ### Added
