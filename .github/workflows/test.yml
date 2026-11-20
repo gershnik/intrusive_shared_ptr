@@ -27,9 +27,9 @@ jobs:
           import os
 
           macos_map = {
-            "15.4": 'macos-14',
             "16.4": 'macos-15',
-            "26.3": 'macos-15',
+            "26.6": 'macos-26',
+            "27.2": 'xcode-27',
           }
 
           win_platforms = ["x64", "Win32"]
@@ -51,11 +51,11 @@ jobs:
             15: 'ubuntu-22.04', 
             16: 'ubuntu-22.04',
             17: 'ubuntu-22.04', 
-            18: 'ubuntu-latest', 
-            19: 'ubuntu-latest', 
-            20: 'ubuntu-latest',
-            21: 'ubuntu-latest',
-            22: 'ubuntu-latest'
+            18: 'ubuntu-24.04', 
+            19: 'ubuntu-24.04', 
+            20: 'ubuntu-24.04',
+            21: 'ubuntu-26.04',
+            22: 'ubuntu-26.04'
           }
           
           hosts = []
@@ -142,7 +142,7 @@ jobs:
           echo "CMAKE_GENERATOR=-GNinja" >> $GITHUB_ENV
         fi
 
-        if [[ '${{ matrix.os }}' == macos-* ]]; then
+        if [[ '${{ matrix.os }}' == macos-* || '${{ matrix.os }}' == xcode-* ]]; then
             echo "DEVELOPER_DIR=/Applications/Xcode_${{ matrix.version }}.app" >> $GITHUB_ENV
         fi
 
